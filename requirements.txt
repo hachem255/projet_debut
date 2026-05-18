@@ -12,9 +12,10 @@ waitress>=3.0.0                # WSGI server, works on Windows AND Linux
 # ── Linux/Mac production server (optional) ───────────────────────────────────
 # gunicorn>=21.0.0             # only needed for Gunicorn deployments
 
-# ── Authentication ────────────────────────────────────────────────────────────
+# ── Authentication ────────────────────────────────────────────────────────
 python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
+passlib[bcrypt]>=1.7.4       # Updated for bcrypt compatibility
+bcrypt>=4.0.0,<5.1.0         # Explicit version to avoid conflicts
 
 # ── Database / ORM ───────────────────────────────────────────────────────────
 # SQLite is bundled with Python — no extra package needed
