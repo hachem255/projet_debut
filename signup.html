@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>إنشاء حساب</title>
+    <style>
+      :root {
+        /* Backgrounds */
+                --bg: #070a12;
+                --bg2: rgba(255, 255, 255, 0.055);
+                --bg3: rgba(255, 255, 255, 0.038);
+                --bg4: rgba(255, 255, 255, 0.025);
+                /* Glass */
+                --glass: rgba(255, 255, 255, 0.065);
+                --glass-border: rgba(255, 255, 255, 0.18);
+                --glass-hover: rgba(255, 255, 255, 0.09);
+                --glass-blur: 24px;
+                --glass-shadow:
+                    0 24px 64px -12px rgba(0, 0, 0, 0.72),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+                /* Colors */
+                --accent: #5e9cff;
+                --accent2: #87b8ff;
+                --accent-glow: rgba(94, 156, 255, 0.2);
+                --gold: #f4c95d;
+                --red: #ff6060;
+                --green: #22d3a8;
+                --purple: #a78bfa;
+                --text: #eef0f8;
+                --muted: #6b7694;
+                --muted2: #9aa3bf;
+                /* Misc */
+                --font: "Cairo", sans-serif;
+                --mono: "IBM Plex Mono", monospace;
+                --r: 12px;
+                --r2: 20px;
+                --r3: 28px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        width: 360px;
+        background: var(--card);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+      }
+      h1 {
+        margin: 0 0 0.4rem;
+        font-size: 1.25rem;
+      }
+      p.sub {
+        color: var(--muted);
+        margin-bottom: 1.1rem;
+        font-size: 0.92rem;
+      }
+      label {
+        display: block;
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 0.7rem;
+        margin-bottom: 0.35rem;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        outline: none;
+        font-size: 1rem;
+      }
+      input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .row {
+        margin-top: 1rem;
+      }
+      .select {
+        background-color: #0c0f18;
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .actions {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 1.2rem;
+      }
+      .link_signin {
+        color: var(--accent);
+        display: inline-block;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 0.65rem 1.3rem;
+        border-radius: var(--r);
+        font-family: var(--font);
+        font-size: 0.87rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+      }
+      .btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.08),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      }
+      .btn:hover::after {
+        opacity: 1;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        box-shadow: 0 4px 18px -4px rgba(94, 156, 255, 0.45);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px -6px rgba(94, 156, 255, 0.6);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted2);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+      }
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+      .note {
+        margin-top: 0.8rem;
+        font-size: 0.86rem;
+        color: var(--muted);
+        text-align: center;
+      }
+      .status {
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        display: none;
+        line-height: 1.6;
+      }
+      .status.ok {
+        display: block;
+        background: rgba(34, 211, 168, 0.1);
+        border: 1px solid rgba(34, 211, 168, 0.3);
+        color: #b7f7e8;
+      }
+      .status.error {
+        display: block;
+        background: rgba(255, 96, 96, 0.1);
+        border: 1px solid rgba(255, 96, 96, 0.3);
+        color: #ffd5d5;
+      }
+      .verify-box {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: none;
+      }
+      .verify-box.active {
+        display: block;
+      }
+      .verify-actions {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 0.9rem;
+      }
+      .verify-actions .btn {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>إنشاء حساب جديد</h1>
+      <p class="sub">سيتم إرسال رمز مكوّن من 7 أرقام إلى بريدك ثم تأكيده لإكمال إنشاء الحساب.</p>
+
+      <form id="signup-form">
+        <label for="username">اسم المستخدم</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="اسم المستخدم"
+          required
+        />
+
+        <label for="password">كلمة المرور</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="كلمة المرور"
+          required
+        />
+
+        <label for="role">الدور</label>
+        <select id="role" class="select" name="role" required>
+          <option value="student">طالب</option>
+          <option value="teacher">أستاذ</option>
+        </select>
+
+        <label for="email">البريد</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+        />
+
+        <div class="status" id="status-box"></div>
+
+        <div class="actions">
+          <button type="button" id="send-code-btn" style="width: 100%" class="btn btn-primary">
+            إرسال رمز التحقق
+          </button>
+        </div>
+
+        <div class="verify-box" id="verify-box">
+          <label for="verification-code">رمز التحقق</label>
+          <input
+            id="verification-code"
+            name="verification_code"
+            type="text"
+            inputmode="numeric"
+            maxlength="7"
+            placeholder="123456"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+          />
+          <div class="verify-actions">
+            <button type="button" id="verify-btn" class="btn btn-primary">
+              تأكيد الرمز
+            </button>
+            <button type="button" id="resend-btn" class="btn btn-ghost">
+              إعادة الإرسال
+            </button>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 0.7rem">
+          <p class="link_signin">لديك حساب بالفعل؟</p>
+          <a href="/" class="link_signin" style="font-weight: 700"
+            >تسجيل الدخول</a
+          >
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const API = window.location.origin;
+      const form = document.getElementById("signup-form");
+      const verifyBox = document.getElementById("verify-box");
+      const statusBox = document.getElementById("status-box");
+      const sendCodeBtn = document.getElementById("send-code-btn");
+      const verifyBtn = document.getElementById("verify-btn");
+      const resendBtn = document.getElementById("resend-btn");
+      let pendingEmail = "";
+
+      function setStatus(message, type) {
+        statusBox.textContent = message;
+        statusBox.className = `status ${type}`;
+      }
+
+      function explainNetworkError(error) {
+        const message = String(error && error.message ? error.message : error);
+        if (window.location.protocol === "file:") {
+          return "افتح الصفحة من السيرفر فقط: http://127.0.0.1:8000/signup.html وليس مباشرة من الملف.";
+        }
+        if (message.includes("Failed to fetch")) {
+          return "تعذر الاتصال بالسيرفر. تأكد أن `python server.py` يعمل ثم افتح http://127.0.0.1:8000/signup.html";
+        }
+        return message || "حدث خطأ غير متوقع.";
+      }
+
+      function signupPayload() {
+        return {
+          username: document.getElementById("username").value.trim(),
+          password: document.getElementById("password").value,
+          role: document.getElementById("role").value,
+          email: document.getElementById("email").value.trim(),
+        };
+      }
+
+      async function requestCode() {
+        const payload = signupPayload();
+        if (!payload.username || !payload.password || !payload.email) {
+          setStatus("يرجى تعبئة كل الحقول المطلوبة أولاً.", "error");
+          return;
+        }
+
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = "جارٍ الإرسال...";
+        try {
+          const response = await fetch(`${API}/auth/request-verification-code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.detail || "تعذر إرسال رمز التحقق.");
+          }
+          pendingEmail = payload.email;
+          verifyBox.classList.add("active");
+          setStatus("تم إرسال الرمز إلى بريدك الإلكتروني. أدخِل 7 أرقام لإكمال التسجيل.", "ok");
+          document.getElementById("verification-code").focus();
+        } catch (error) {
+          setStatus(explainNetworkError(error), "error");
+        } finally {
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.textContent = "إرسال رمز التحقق";
+        }
+      }
+
+      async function verifyCode() {
+        // Remove ALL whitespace the email client may add around the code
+        const cleanCode = document.getElementById("verification-code").value.replace(/\s/g, "");
+        if (!pendingEmail) {
+          setStatus("أرسل رمز التحقق أولاً.", "error");
+          return;
+        }
+        if (!/^\d{7}$/.test(cleanCode)) {
+          setStatus("أدخل رمزاً صحيحاً من 7 أرقام.", "error");
+          return;
+        }
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = "جارٍ التأكيد...";
+        try {
+          const response = await fetch(`${API}/auth/verify-signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingEmail, code: cleanCode }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.detail || "رمز التحقق غير صحيح.");
+          }
+          setStatus("تم إنشاء الحساب بنجاح. سيتم تحويلك إلى صفحة تسجيل الدخول.", "ok");
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1200);
+        } catch (error) {
+          setStatus(explainNetworkError(error), "error");
+        } finally {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = "تأكيد الرمز";
+        }
+      }
+
+      if (window.location.protocol === "file:") {
+        setStatus(
+          "هذه الصفحة لن تعمل عند فتح ملف HTML مباشرة. شغّل السيرفر وافتح: http://127.0.0.1:8000/signup.html",
+          "error"
+        );
+      }
+
+      sendCodeBtn.addEventListener("click", requestCode);
+      verifyBtn.addEventListener("click", verifyCode);
+      resendBtn.addEventListener("click", requestCode);
+      document
+        .getElementById("verification-code")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            verifyCode();
+          }
+        });
+    </script>
+  </body>
+</html>

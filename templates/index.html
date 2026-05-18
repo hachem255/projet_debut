@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>المكتبة الذكية • Smart Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ══ Design Tokens ══ */
+:root{
+  /* Backgrounds */
+  --bg:#070a12;
+  --bg2:rgba(255,255,255,0.055);
+  --bg3:rgba(255,255,255,0.038);
+  --bg4:rgba(255,255,255,0.025);
+  /* Glass */
+  --glass:rgba(255,255,255,0.065);
+  --glass-border:rgba(255,255,255,0.18);
+  --glass-hover:rgba(255,255,255,0.09);
+  --glass-blur:24px;
+  --glass-shadow:0 24px 64px -12px rgba(0,0,0,0.72),inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -1px 0 rgba(0,0,0,0.25);
+  /* Colors */
+  --accent:#5e9cff;--accent2:#87b8ff;--accent-glow:rgba(94,156,255,.2);
+  --gold:#f4c95d;--red:#ff6060;--green:#22d3a8;--purple:#a78bfa;
+  --text:#eef0f8;--muted:#6b7694;--muted2:#9aa3bf;
+  /* Misc */
+  --font:'Cairo',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:12px;--r2:20px;--r3:28px;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(94,156,255,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(167,139,250,.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 40%, rgba(34,211,168,.04) 0%, transparent 50%);
+  color:var(--text);min-height:100vh;overflow-x:hidden
+}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22)}
+
+/* ══ Glass utility ══ */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(var(--glass-blur));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+}
+
+/* ══ Login ══ */
+#login-screen{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;transition:opacity .5s,visibility .5s;
+}
+#login-screen::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 55% at 25% 15%, rgba(94,156,255,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 75% 85%, rgba(167,139,250,.1) 0%,transparent 50%);
+  pointer-events:none;
+}
+#login-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+.login-card{
+  background:rgba(12,15,24,0.78);
+  backdrop-filter:blur(40px);
+  -webkit-backdrop-filter:blur(40px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:var(--r3);
+  padding:3rem 3.2rem;
+  width:400px;
+  box-shadow:0 50px 100px -25px rgba(0,0,0,0.85),inset 0 1px 0 rgba(255,255,255,0.2);
+  animation:slideUp .55s cubic-bezier(.16,1,.3,1);
+  position:relative;z-index:1;
+}
+
+.login-logo{
+  font-size:2.4rem;font-weight:900;letter-spacing:-1.5px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:.3rem;
+}
+.login-sub{font-size:.82rem;color:var(--muted);margin-bottom:2.2rem}
+
+label{display:block;font-size:.75rem;color:var(--muted2);margin-bottom:.4rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+input[type=text],input[type=password],input[type=number],input[type=email]{
+  width:100%;padding:.7rem 1rem;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);
+  color:var(--text);font-family:var(--font);font-size:.9rem;
+  outline:none;
+  transition:border-color .25s,box-shadow .25s,background .25s;
+  margin-bottom:1.1rem;direction:ltr;text-align:left;
+}
+input:focus{
+  border-color:var(--accent);
+  background:rgba(94,156,255,.08);
+  box-shadow:0 0 0 4px var(--accent-glow);
+}
+
+/* ══ Buttons ══ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.65rem 1.3rem;border-radius:var(--r);
+  font-family:var(--font);font-size:.87rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .22s cubic-bezier(.4,0,.2,1);
+  white-space:nowrap;position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(255,255,255,.08),transparent);
+  opacity:0;transition:opacity .2s;pointer-events:none;
+}
+.btn:hover::after{opacity:1}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;
+  box-shadow:0 4px 18px -4px rgba(94,156,255,.45);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px -6px rgba(94,156,255,.6)}
+.btn-primary:active{transform:translateY(0)}
+
+.btn-ghost{
+  background:rgba(255,255,255,.06);
+  color:var(--muted2);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(8px);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.25)}
+
+.btn-danger{background:rgba(255,96,96,.1);color:var(--red);border:1px solid rgba(255,96,96,.22)}
+.btn-danger:hover{background:rgba(255,96,96,.2)}
+.btn-success{background:rgba(34,211,168,.1);color:var(--green);border:1px solid rgba(34,211,168,.22)}
+.btn-success:hover{background:rgba(34,211,168,.2)}
+.btn-sm{padding:.32rem .7rem;font-size:.78rem}
+.btn-xs{padding:.2rem .5rem;font-size:.72rem}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+#login-error{color:var(--red);font-size:.8rem;margin-top:.6rem;display:none}
+
+/* ══ App layout ══ */
+#app{display:flex;height:100vh}
+#app.hidden{display:none}
+
+/* ══ Sidebar ══ */
+aside{
+  width:230px;flex-shrink:0;
+  background:rgba(8,11,20,0.85);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border-left:1px solid rgba(255,255,255,.1);
+  box-shadow:6px 0 40px -8px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;
+  padding:1.4rem 0;position:relative;z-index:10;
+}
+.sidebar-logo{
+  padding:0 1.4rem 1.4rem;
+  font-size:1.25rem;font-weight:900;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:-.5px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:.9rem;
+}
+.sidebar-logo span{
+  -webkit-text-fill-color:var(--muted);
+  background:none;color:var(--muted);
+  font-weight:400;font-size:.7rem;display:block;margin-top:.15rem;
+}
+
+nav a{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.62rem 1.4rem;
+  color:var(--muted);text-decoration:none;
+  font-size:.86rem;font-weight:500;
+  cursor:pointer;border:none;background:transparent;
+  width:100%;text-align:right;
+  transition:all .2s;
+  border-left:3px solid transparent;
+  position:relative;
+}
+nav a::before{
+  content:'';position:absolute;inset:0 0 0 3px;
+  background:linear-gradient(90deg,rgba(94,156,255,.1),transparent);
+  opacity:0;transition:opacity .2s;
+}
+nav a:hover{color:var(--text)}
+nav a:hover::before{opacity:1}
+nav a.active{
+  color:var(--accent);
+  border-left-color:var(--accent);
+}
+nav a.active::before{opacity:1}
+
+.nav-icon{font-size:1.05rem;flex-shrink:0;opacity:.8}
+.sidebar-bottom{
+  margin-top:auto;padding:.9rem 1.4rem 0;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.user-pill{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem .75rem;
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--r);
+  margin-bottom:.55rem;
+}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;flex-shrink:0;
+}
+.user-name{font-size:.8rem;font-weight:700}
+.user-role{font-size:.7rem;color:var(--muted)}
+
+/* ══ Main content ══ */
+main{flex:1;overflow-y:auto;padding:2rem 2.2rem;background:transparent}
+.page{display:none;animation:fadeIn .3s ease}
+.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.8rem;gap:1rem}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.4px}
+.page-sub{font-size:.8rem;color:var(--muted);margin-top:.18rem}
+.page-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+
+/* ══ KPI cards ══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi{
+  background:rgba(255,255,255,.055);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:var(--r2);
+  padding:1.2rem 1.4rem;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px -8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.kpi:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.22);
+  transform:translateY(-3px);
+  box-shadow:0 16px 48px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);
+}
+.kpi-label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.45rem}
+.kpi-value{font-size:2rem;font-weight:800;line-height:1}
+.kpi-sub{font-size:.7rem;color:var(--muted);margin-top:.28rem}
+.kpi.c-accent .kpi-value{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.kpi.c-gold   .kpi-value{color:var(--gold)}
+.kpi.c-green  .kpi-value{color:var(--green)}
+.kpi.c-red    .kpi-value{color:var(--red)}
+.kpi.c-purple .kpi-value{color:var(--purple)}
+
+/* ══ Tables ══ */
+.table-wrap{
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:var(--r2);
+  overflow:hidden;margin-bottom:1.3rem;
+  box-shadow:0 8px 32px -8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:.95rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.table-title{font-size:.92rem;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th{
+  text-align:right;padding:.7rem 1.2rem;
+  font-size:.7rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;
+  background:rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+td{padding:.75rem 1.2rem;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(94,156,255,.06)}
+.td-actions{display:flex;gap:.35rem;flex-wrap:wrap}
+
+/* ══ Badges ══ */
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700}
+.badge-blue  {background:rgba(94,156,255,.18);color:var(--accent2)}
+.badge-green {background:rgba(34,211,168,.18);color:var(--green)}
+.badge-red   {background:rgba(255,96,96,.18); color:var(--red)}
+.badge-gold  {background:rgba(244,201,93,.18);color:var(--gold)}
+.badge-gray  {background:rgba(255,255,255,.1);color:var(--muted2)}
+.badge-purple{background:rgba(167,139,250,.18);color:var(--purple)}
+
+/* ══ Search bar ══ */
+.search-bar{display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.search-input{
+  flex:1;min-width:180px;padding:.65rem 1rem;
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);
+  color:var(--text);font-family:var(--font);font-size:.88rem;
+  outline:none;direction:rtl;
+  transition:border-color .25s,box-shadow .25s,background .25s;
+}
+.search-input:focus{
+  border-color:var(--accent);
+  background:rgba(94,156,255,.08);
+  box-shadow:0 0 0 4px var(--accent-glow);
+}
+select.search-input{cursor:pointer}
+
+/* ══ Modal ══ */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(12px);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transition:all .25s;
+}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{
+  background:rgba(10,13,22,0.88);
+  backdrop-filter:blur(40px);
+  -webkit-backdrop-filter:blur(40px);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:var(--r2);
+  padding:2rem 2.2rem;
+  width:500px;max-width:95vw;max-height:88vh;overflow-y:auto;
+  transform:translateY(18px) scale(.98);
+  transition:transform .28s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 50px 100px -25px rgba(0,0,0,0.9),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-title{font-size:1.08rem;font-weight:800;margin-bottom:1.5rem}
+.form-row{margin-bottom:.95rem}
+.form-row label{margin-bottom:.32rem}
+.form-row select,.form-row textarea{
+  width:100%;padding:.65rem .9rem;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);
+  color:var(--text);font-family:var(--font);font-size:.88rem;
+  outline:none;transition:border-color .22s,background .22s;
+}
+.form-row select{cursor:pointer;direction:rtl}
+.form-row textarea{resize:vertical;min-height:75px;direction:rtl}
+.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);background:rgba(94,156,255,.07)}
+.form-row input{margin-bottom:0}
+.modal-actions{display:flex;gap:.5rem;margin-top:1.5rem;justify-content:flex-end}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
+
+/* ══ Toast ══ */
+#toast{
+  position:fixed;bottom:1.8rem;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:rgba(10,13,22,0.92);
+  backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);
+  padding:.7rem 1.5rem;font-size:.85rem;
+  z-index:9999;transition:transform .3s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;max-width:380px;text-align:center;
+  box-shadow:0 20px 60px -15px rgba(0,0,0,.8);
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:rgba(34,211,168,.45);color:var(--green)}
+#toast.error{border-color:rgba(255,96,96,.45);color:var(--red)}
+
+/* ══ Activity ══ */
+.activity-item{display:flex;align-items:flex-start;gap:.75rem;padding:.68rem 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:.38rem}
+.activity-msg{font-size:.83rem}
+.activity-time{font-size:.72rem;color:var(--muted);margin-top:.1rem;font-family:var(--mono)}
+
+/* ══ Empty state ══ */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-icon{font-size:2.2rem;margin-bottom:.6rem;opacity:.25}
+.empty-text{font-size:.88rem}
+
+/* ══ Loader ══ */
+.loader{
+  display:inline-block;width:18px;height:18px;
+  border:2px solid rgba(255,255,255,.1);
+  border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+
+/* ══ Pagination ══ */
+.pagination{display:flex;gap:.4rem;align-items:center;margin-top:1rem;flex-wrap:wrap}
+.pagination button{
+  padding:.32rem .65rem;
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;color:var(--muted);
+  font-family:var(--font);font-size:.8rem;cursor:pointer;
+  transition:all .18s;
+}
+.pagination button:hover{border-color:var(--accent);color:var(--accent);background:rgba(94,156,255,.1)}
+.pagination button.current{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 14px -4px rgba(94,156,255,.5);
+}
+.pagination button:disabled{opacity:.28;cursor:not-allowed}
+
+/* ══ Dash grid ══ */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
+
+/* ══ PDF viewer ══ */
+.pdf-viewer-wrap{
+  width:100%;height:75vh;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:var(--r);overflow:hidden;
+  background:rgba(0,0,0,.3);
+}
+.pdf-viewer-wrap iframe{width:100%;height:100%;border:none}
+
+/* ══ Category chips ══ */
+.cat-chip{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.3rem .75rem;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:20px;font-size:.78rem;font-weight:600;cursor:default;
+}
+.cat-chip .chip-del{cursor:pointer;color:var(--red);font-size:.75rem;opacity:.6}
+.cat-chip .chip-del:hover{opacity:1}
+
+/* ══ Upload zone ══ */
+.upload-zone{
+  border:2px dashed rgba(255,255,255,.18);
+  border-radius:var(--r2);padding:2.2rem;
+  text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.03);
+  transition:all .25s;
+}
+.upload-zone:hover,.upload-zone.dragover{
+  border-color:var(--accent);
+  background:rgba(94,156,255,.08);
+  box-shadow:0 0 0 4px var(--accent-glow);
+}
+.upload-zone input{display:none}
+.upload-zone-icon{font-size:2.2rem;margin-bottom:.6rem;opacity:.35}
+.upload-zone-text{font-size:.85rem;color:var(--muted)}
+
+/* ══ Progress bar ══ */
+.progress-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:.6rem}
+.progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:2px;transition:width .3s;
+}
+
+/* ══ Animations ══ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══ Responsive ══ */
+@media(max-width:768px){
+  aside{width:54px}
+  .sidebar-logo,.sidebar-logo span,nav a span,.user-name,.user-role{display:none}
+  nav a{justify-content:center;padding:.7rem}
+  main{padding:1.1rem}
+  .form-grid{grid-template-columns:1fr}
+}
+
+/* ══ Category Tag Chips (multi-select) ══ */
+.tag-picker{display:flex;flex-wrap:wrap;gap:.45rem;padding:.6rem 0}
+.tag-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.32rem .75rem;border-radius:20px;
+  font-size:.78rem;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--muted2);
+  transition:all .18s;user-select:none;
+}
+.tag-chip:hover{background:rgba(255,255,255,.12);color:var(--text);border-color:rgba(255,255,255,.25)}
+.tag-chip.selected{
+  background:rgba(94,156,255,.18);
+  border-color:rgba(94,156,255,.5);
+  color:var(--accent2);
+}
+.tag-chip.cat-filter{cursor:pointer}
+.tag-chip.cat-filter.active{
+  background:rgba(94,156,255,.18);
+  border-color:rgba(94,156,255,.5);
+  color:var(--accent);
+}
+
+/* ══ Language Button Group ══ */
+.lang-group{display:flex;gap:.4rem;flex-wrap:wrap}
+.lang-btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.38rem .85rem;border-radius:var(--r);
+  font-size:.82rem;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--muted2);
+  transition:all .18s;
+}
+.lang-btn:hover{background:rgba(255,255,255,.12);color:var(--text)}
+.lang-btn.selected{
+  background:rgba(34,211,168,.15);
+  border-color:rgba(34,211,168,.4);
+  color:var(--green);
+}
+.lang-flag{font-size:1rem}
+
+/* ══ ISBN feedback ══ */
+.isbn-wrap{position:relative}
+.isbn-status{
+  position:absolute;left:.85rem;top:50%;transform:translateY(-50%);
+  font-size:.75rem;font-weight:700;pointer-events:none;
+}
+
+/* ══ Book / Rec cards ══ */
+.book-card{
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--r);padding:.95rem 1.1rem;margin-bottom:.65rem;
+  cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+.book-card:hover{
+  background:rgba(255,255,255,.085);border-color:rgba(94,156,255,.35);
+  transform:translateY(-1px);
+  box-shadow:0 8px 28px -8px rgba(0,0,0,.45),0 0 0 1px rgba(94,156,255,.12);
+}
+.rec-card{
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--r2);padding:1.1rem;cursor:pointer;
+  display:flex;flex-direction:column;
+  transition:all .22s cubic-bezier(.4,0,.2,1);
+}
+.rec-card:hover{
+  background:rgba(255,255,255,.085);border-color:rgba(94,156,255,.35);
+  transform:translateY(-3px);
+  box-shadow:0 12px 36px -12px rgba(0,0,0,.6),0 0 0 1px rgba(94,156,255,.1);
+}
+
+/* ══ Missing CSS vars ══ */
+:root{--border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.18)}
+
+/* ══ Section divider in modals ══ */
+.modal-section{
+  font-size:.7rem;color:var(--muted2);font-weight:700;
+  text-transform:uppercase;letter-spacing:.07em;
+  margin:.9rem 0 .5rem;
+  padding-top:.8rem;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">مكتبة<span style="color:var(--gold)">ذكية</span></div>
+    <div class="login-sub">منصة إدارة المكتبة الجامعية — v6.0</div>
+    <label>اسم المستخدم</label>
+    <input type="text" id="login-user" placeholder="admin"/>
+    <label>كلمة المرور</label>
+    <input type="password" id="login-pass" placeholder="••••••••"/>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()" id="login-btn">دخول</button>
+    <div style="text-align: center; margin-top: 0.7rem">
+                    <p class="link_signup">ليس لديك حساب؟</p>
+                    <a
+                        href="signup.html"
+                        class="link_signup"
+                        style=" font-weight: 700"
+                        >انشاء حساب</a
+                    >
+                </div>
+
+    <div id="login-error">❌ بيانات الدخول غير صحيحة</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" class="hidden">
+  <aside>
+    <div class="sidebar-logo">
+      مكتبة<span style="color:var(--gold);font-weight:900">ذكية</span>
+      <span>v6.0</span>
+    </div>
+    <nav>
+      <a onclick="showPage('dashboard')" id="nav-dashboard" class="active">
+        <span class="nav-icon">◈</span><span>لوحة التحكم</span>
+      </a>
+      <a onclick="showPage('catalog')" id="nav-catalog">
+        <span class="nav-icon">▤</span><span>الكتب</span>
+      </a>
+      <a onclick="showPage('pdfs')" id="nav-pdfs">
+        <span class="nav-icon">⊞</span><span>ملفات PDF</span>
+      </a>
+      <a onclick="showPage('loans')" id="nav-loans">
+        <span class="nav-icon">⇄</span><span>الإعارات</span>
+      </a>
+      <a onclick="showPage('recommendations')" id="nav-recommendations">
+        <span class="nav-icon">✦</span><span>التوصيات</span>
+      </a>
+      <a onclick="showPage('categories')" id="nav-categories" class="admin-only" style="display:none">
+        <span class="nav-icon">◉</span><span>التصنيفات</span>
+      </a>
+      <a onclick="showPage('users')" id="nav-users" class="admin-only" style="display:none">
+        <span class="nav-icon">◎</span><span>المستخدمون</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-name" id="user-name-display">—</div>
+          <div class="user-role" id="user-role-display">—</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="doLogout()">خروج</button>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">لوحة التحكم</div>
+          <div class="page-sub" id="dash-time">—</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ تحديث</button>
+      </div>
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi c-accent"><div class="kpi-label">إجمالي الكتب</div><div class="kpi-value">—</div></div>
+        <div class="kpi c-green"><div class="kpi-label">متاحة</div><div class="kpi-value">—</div></div>
+        <div class="kpi c-gold"><div class="kpi-label">إعارات نشطة</div><div class="kpi-value">—</div></div>
+        <div class="kpi c-red"><div class="kpi-label">متأخرة</div><div class="kpi-value">—</div></div>
+        <div class="kpi c-purple"><div class="kpi-label">ملفات PDF</div><div class="kpi-value">—</div></div>
+        <div class="kpi"><div class="kpi-label">مستخدمون</div><div class="kpi-value" style="color:var(--text)">—</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="table-wrap">
+          <div class="table-header"><span class="table-title">أكثر الكتب استعارةً</span></div>
+          <div id="top-books-list" style="padding:.4rem 0"></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header"><span class="table-title">آخر النشاطات</span></div>
+          <div id="activity-list" style="padding:.4rem 1.2rem"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">الإعارات المتأخرة</span>
+          <span id="overdue-count" class="badge badge-red">—</span>
+        </div>
+        <table>
+          <thead><tr><th>الكتاب</th><th>المستخدم</th><th>الاستحقاق</th><th>التأخر</th></tr></thead>
+          <tbody id="overdue-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── CATALOG ── -->
+    <div class="page" id="page-catalog">
+      <div class="page-header">
+        <div>
+          <div class="page-title">كتالوج الكتب</div>
+          <div class="page-sub" id="catalog-count">—</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm librarian-only" style="display:none" onclick="openAddBook()">+ إضافة كتاب</button>
+        </div>
+      </div>
+      <!-- Search bar -->
+      <div class="search-bar">
+        <input class="search-input" id="catalog-q"
+               placeholder="بحث في العنوان · المؤلف · الوصف · ISBN…"
+               style="flex:2" onkeydown="if(event.key==='Enter')loadCatalog(1)"/>
+        <select class="search-input" id="catalog-lang" style="max-width:130px" onchange="loadCatalog(1)">
+          <option value="">كل اللغات</option>
+          <option value="fr">🇫🇷 فرنسية</option>
+          <option value="ar">🇩🇿 عربية</option>
+          <option value="en">🇬🇧 إنجليزية</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted2);cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="catalog-available" onchange="loadCatalog(1)"
+                 style="accent-color:var(--green);width:14px;height:14px"/> متاح فقط
+        </label>
+        <button class="btn btn-primary btn-sm" onclick="loadCatalog(1)">بحث</button>
+      </div>
+      <!-- Category filter chips -->
+      <div id="cat-chips" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.2rem"></div>
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>العنوان</th><th>المؤلف</th><th>التصنيف</th>
+            <th>اللغة</th><th>متاح/إجمالي</th><th>إجراء</th>
+          </tr></thead>
+          <tbody id="catalog-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="catalog-pagination"></div>
+    </div>
+
+    <!-- ── PDF MANAGER ── -->
+    <div class="page" id="page-pdfs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ملفات PDF</div>
+          <div class="page-sub">رفع · تعديل · عرض · تحميل · بحث داخل المحتوى</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm librarian-only" style="display:none" onclick="openUploadPdf()">↑ رفع PDF</button>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" id="pdf-search-q"
+               placeholder="ابحث داخل محتوى الملفات…"
+               onkeydown="if(event.key==='Enter')searchPdfs()"/>
+        <button class="btn btn-ghost" onclick="searchPdfs()">بحث</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadPdfs(1)">↻ الكل</button>
+      </div>
+      <div id="pdf-search-results" style="margin-bottom:1rem"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>العنوان</th><th>المؤلف</th><th>اللغة</th>
+            <th>الصفحات</th><th>الحجم</th><th>التاريخ</th><th>إجراء</th>
+          </tr></thead>
+          <tbody id="pdf-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pdf-pagination"></div>
+    </div>
+
+    <!-- ── LOANS ── -->
+    <div class="page" id="page-loans">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الإعارات</div>
+          <div class="page-sub" id="loans-sub">سجل الاستعارات والإرجاع</div>
+        </div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm librarian-only" style="display:none" id="btn-loans-all-users"
+                  onclick="setLoansView('all')">📋 كل المستخدمين</button>
+          <button class="btn btn-primary btn-sm" id="btn-loans-mine"
+                  onclick="setLoansView('mine')">📌 إعاراتي</button>
+          <button class="btn btn-ghost btn-sm" id="btn-loans-active"
+                  onclick="setLoansView('active')">⏳ النشطة</button>
+          <button class="btn btn-ghost btn-sm" id="btn-loans-myrequests"
+                  onclick="setLoansView('myrequests')">📥 طلباتي <span id="myrequests-badge" class="badge badge-gold" style="display:none;margin-right:.3rem"></span></button>
+          <button class="btn btn-ghost btn-sm librarian-only" style="display:none" id="btn-loans-pending-borrows"
+                  onclick="setLoansView('pending-borrows')">📨 طلبات الاستعارة <span id="pending-borrows-badge" class="badge badge-gold" style="display:none;margin-right:.3rem"></span></button>
+          <button class="btn btn-ghost btn-sm librarian-only" style="display:none" id="btn-loans-pending"
+                  onclick="setLoansView('pending')">🔔 طلبات الإرجاع <span id="pending-badge" class="badge badge-red" style="display:none;margin-right:.3rem"></span></button>
+        </div>
+      </div>
+      <div id="loans-notifications" style="margin-bottom:1rem"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>الكتاب</th><th>المستخدم</th><th>الاستعارة</th>
+            <th>الاستحقاق</th><th>الحالة</th><th>إجراء</th>
+          </tr></thead>
+          <tbody id="loans-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── RECOMMENDATIONS ── -->
+    <div class="page" id="page-recommendations">
+      <div class="page-header">
+        <div><div class="page-title">التوصيات</div>
+          <div class="page-sub" id="rec-strategy">—</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="loadRecommendations()">↻ تحديث</button>
+      </div>
+      <div id="rec-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem"></div>
+    </div>
+
+    <!-- ── CATEGORIES ── -->
+    <div class="page" id="page-categories">
+      <div class="page-header">
+        <div><div class="page-title">التصنيفات</div>
+          <div class="page-sub">إدارة تصنيفات الكتب — admin فقط</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openAddCategory()">+ تصنيف جديد</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>الاسم</th><th>الوصف</th><th>عدد الكتب</th><th>إجراء</th></tr></thead>
+          <tbody id="categories-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <div><div class="page-title">إدارة المستخدمين</div>
+          <div class="page-sub">admin فقط</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ مستخدم جديد</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>المستخدم</th><th>البريد</th><th>الدور</th>
+            <th>الحالة</th><th>إجراء</th>
+          </tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add/Edit Book -->
+<div class="modal-overlay" id="modal-book">
+  <div class="modal">
+    <div class="modal-title" id="modal-book-title">إضافة كتاب</div>
+    <input type="hidden" id="f-book-id"/>
+    <!-- Basic -->
+    <div class="form-grid">
+      <div class="form-row"><label>العنوان *</label><input type="text" id="f-title"/></div>
+      <div class="form-row"><label>المؤلف *</label><input type="text" id="f-author"/></div>
+      <div class="form-row"><label>السنة</label><input type="number" id="f-year" placeholder="2024"/></div>
+      <div class="form-row"><label>عدد النسخ</label><input type="number" id="f-copies" value="1" min="1"/></div>
+    </div>
+    <!-- ISBN -->
+    <div class="form-row">
+      <label>ISBN <span style="color:var(--muted);font-weight:400">(ISBN-10 أو ISBN-13، اختياري)</span></label>
+      <div style="position:relative">
+        <input type="text" id="f-isbn" placeholder="978-3-16-148410-0"
+               dir="ltr" style="text-align:left;padding-left:2.2rem"
+               oninput="liveIsbn(this.value)"/>
+        <span id="isbn-icon" style="position:absolute;left:.65rem;top:50%;transform:translateY(-50%);font-size:.85rem"></span>
+      </div>
+      <div id="isbn-msg" style="font-size:.73rem;margin-top:.28rem;display:none"></div>
+    </div>
+    <!-- Language buttons -->
+    <div class="form-row">
+      <label>اللغة</label>
+      <div class="lang-group" id="f-lang-group">
+        <button type="button" class="lang-btn selected" data-lang="fr" onclick="selectLang(this)">🇫🇷 فرنسية</button>
+        <button type="button" class="lang-btn" data-lang="ar" onclick="selectLang(this)">🇩🇿 عربية</button>
+        <button type="button" class="lang-btn" data-lang="en" onclick="selectLang(this)">🇬🇧 إنجليزية</button>
+      </div>
+    </div>
+    <!-- Category chips -->
+    <div class="form-row">
+      <label>التصنيف</label>
+      <div class="tag-picker" id="f-cat-picker"></div>
+    </div>
+    <div class="form-row"><label>الناشر</label><input type="text" id="f-publisher"/></div>
+    <div class="form-row"><label>الوصف</label><textarea id="f-desc" rows="3"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-book')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitBook()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload PDF -->
+<div class="modal-overlay" id="modal-pdf-upload">
+  <div class="modal">
+    <div class="modal-title">رفع ملف PDF</div>
+    <div class="upload-zone" id="upload-zone"
+         onclick="document.getElementById('pdf-file-input').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="handlePdfDrop(event)">
+      <input type="file" id="pdf-file-input" accept=".pdf" onchange="onPdfFileSelected(event)"/>
+      <div class="upload-zone-icon">⊞</div>
+      <div class="upload-zone-text" id="upload-zone-text">اسحب ملف PDF هنا أو انقر للاختيار</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">الحد الأقصى: 50 MB</div>
+    </div>
+    <div class="progress-wrap" id="upload-progress-wrap" style="display:none">
+      <div class="progress-bar" id="upload-progress-bar" style="width:0%"></div>
+    </div>
+    <div class="form-row" style="margin-top:1rem"><label>العنوان</label>
+      <input type="text" id="pdf-title" placeholder="يُستخرج من الملف تلقائياً"/></div>
+    <div class="form-row"><label>المؤلف</label>
+      <input type="text" id="pdf-author" placeholder="يُستخرج من الملف تلقائياً"/></div>
+    <!-- Language buttons for PDF -->
+    <div class="form-row">
+      <label>اللغة</label>
+      <div class="lang-group" id="pdf-lang-group">
+        <button type="button" class="lang-btn selected" data-lang="fr" onclick="selectLang(this,'pdf-lang-group')">🇫🇷 فرنسية</button>
+        <button type="button" class="lang-btn" data-lang="ar" onclick="selectLang(this,'pdf-lang-group')">🇩🇿 عربية</button>
+        <button type="button" class="lang-btn" data-lang="en" onclick="selectLang(this,'pdf-lang-group')">🇬🇧 إنجليزية</button>
+      </div>
+    </div>
+    <!-- Category chips for PDF -->
+    <div class="form-row">
+      <label>التصنيف</label>
+      <div class="tag-picker" id="pdf-cat-picker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pdf-upload')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitPdfUpload()" id="btn-upload-pdf">رفع</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit PDF -->
+<div class="modal-overlay" id="modal-pdf-edit">
+  <div class="modal">
+    <div class="modal-title">تعديل ملف PDF</div>
+    <input type="hidden" id="edit-pdf-id"/>
+    <div class="form-row"><label>العنوان *</label><input type="text" id="edit-pdf-title"/></div>
+    <div class="form-row"><label>المؤلف</label><input type="text" id="edit-pdf-author"/></div>
+    <div class="form-row">
+      <label>اللغة</label>
+      <div class="lang-group" id="edit-pdf-lang-group">
+        <button type="button" class="lang-btn" data-lang="fr" onclick="selectLang(this,'edit-pdf-lang-group')">🇫🇷 فرنسية</button>
+        <button type="button" class="lang-btn" data-lang="ar" onclick="selectLang(this,'edit-pdf-lang-group')">🇩🇿 عربية</button>
+        <button type="button" class="lang-btn" data-lang="en" onclick="selectLang(this,'edit-pdf-lang-group')">🇬🇧 إنجليزية</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>التصنيف</label>
+      <div class="tag-picker" id="edit-pdf-cat-picker"></div>
+    </div>
+    <div class="modal-section">🔄 استبدال الملف (اختياري)</div>
+    <div class="upload-zone" id="edit-upload-zone" style="padding:1.2rem"
+         onclick="document.getElementById('edit-pdf-file').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')">
+      <input type="file" id="edit-pdf-file" accept=".pdf" onchange="onEditPdfFileSelected(event)"/>
+      <div id="edit-upload-text" class="upload-zone-text" style="font-size:.82rem">
+        اترك فارغاً للاحتفاظ بالملف الحالي
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pdf-edit')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitPdfEdit()" id="btn-save-pdf-edit">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- View PDF -->
+<div class="modal-overlay" id="modal-pdf-view">
+  <div class="modal" style="width:900px;max-width:97vw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div class="modal-title" id="pdf-view-title" style="margin:0">—</div>
+      <div style="display:flex;gap:.4rem">
+        <a id="pdf-download-link" class="btn btn-ghost btn-sm" download>↓ تحميل</a>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-pdf-view')">✕</button>
+      </div>
+    </div>
+    <div class="pdf-viewer-wrap">
+      <iframe id="pdf-viewer-frame" src="" title="PDF Viewer"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Category -->
+<div class="modal-overlay" id="modal-category">
+  <div class="modal" style="width:400px">
+    <div class="modal-title" id="modal-cat-title">تصنيف جديد</div>
+    <input type="hidden" id="f-cat-id"/>
+    <div class="form-row"><label>الاسم *</label><input type="text" id="f-cat-name"/></div>
+    <div class="form-row"><label>الوصف</label><textarea id="f-cat-desc" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-category')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitCategory()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">مستخدم جديد</div>
+    <div class="form-row"><label>اسم المستخدم *</label><input type="text" id="u-username"/></div>
+    <div class="form-row"><label>البريد الإلكتروني *</label><input type="email" id="u-email"/></div>
+    <div class="form-row"><label>الاسم الكامل</label><input type="text" id="u-fullname" dir="rtl"/></div>
+    <div class="form-row"><label>كلمة المرور *</label><input type="password" id="u-password"/></div>
+    <div class="form-row"><label>الدور</label>
+      <select id="u-role">
+        <option value="student">student — طالب</option>
+        <option value="teacher">teacher — أستاذ</option>
+        <option value="librarian">librarian — أمين مكتبة</option>
+        <option value="admin">admin — مدير</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-user')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitAddUser()">إنشاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Borrow Confirm -->
+<div class="modal-overlay" id="modal-borrow">
+  <div class="modal" style="width:420px">
+    <div class="modal-title">تأكيد الاستعارة</div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:1rem">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">الكتاب</div>
+      <div id="borrow-title" style="font-weight:800;font-size:.95rem;line-height:1.3"></div>
+      <div id="borrow-author" style="font-size:.82rem;color:var(--muted2);margin-top:.15rem"></div>
+    </div>
+    <div id="borrow-location" style="display:none;background:rgba(94,156,255,.07);border:1px solid rgba(94,156,255,.2);border-radius:var(--r);padding:.8rem 1rem;margin-bottom:1rem"></div>
+    <div style="font-size:.75rem;color:var(--muted);background:rgba(255,255,255,.04);border-radius:8px;padding:.45rem .75rem;margin-bottom:1.2rem">
+      صلاحياتك: <span id="borrow-policy" style="color:var(--gold);font-weight:700"></span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-borrow')">إلغاء</button>
+      <button class="btn btn-primary" id="borrow-confirm-btn">✓ تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User -->
+<div class="modal-overlay" id="modal-edit-user">
+  <div class="modal" style="width:460px">
+    <div class="modal-title">تعديل بيانات المستخدم</div>
+    <input type="hidden" id="eu-orig-username"/>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>اسم المستخدم</label>
+        <input type="text" id="eu-username" dir="ltr" style="text-align:left"/>
+      </div>
+      <div class="form-row">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="eu-email" dir="ltr" style="text-align:left"/>
+      </div>
+      <div class="form-row">
+        <label>الاسم الكامل</label>
+        <input type="text" id="eu-fullname" dir="rtl"/>
+      </div>
+      <div class="form-row">
+        <label>كلمة مرور جديدة <span style="color:var(--muted);font-weight:400">(اتركها فارغة للإبقاء)</span></label>
+        <input type="password" id="eu-password"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>الدور</label>
+      <select id="eu-role" class="form-row select" style="width:100%;padding:.65rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
+        <option value="student">student — طالب</option>
+        <option value="teacher">teacher — أستاذ</option>
+        <option value="librarian">librarian — أمين مكتبة</option>
+        <option value="admin">admin — مدير</option>
+      </select>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:.7rem;margin-top:.5rem">
+      <input type="checkbox" id="eu-active" style="accent-color:var(--green);width:16px;height:16px"/>
+      <label style="margin:0;font-size:.85rem;color:var(--text);text-transform:none;letter-spacing:0">الحساب نشط</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-user')">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitEditUser()">حفظ التعديلات</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   STATE & CONFIG
+═══════════════════════════════════════════════════════════════════ */
+const API = window.location.origin;
+let TOKEN = localStorage.getItem('lib_token');
+let CURRENT_USER = null;
+let catalogPage = 1, pdfPage = 1;
+let _selectedPdfFile = null, _editPdfFile = null;
+let _loansView = 'mine';
+
+/* ═══════════════════════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════════════════════ */
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const fd = new FormData();
+    fd.append('username', u); fd.append('password', p);
+    const r = await fetch(`${API}/auth/login`, { method: 'POST', body: fd });
+    if (!r.ok) { errEl.style.display = 'block'; return; }
+    const data = await r.json();
+    TOKEN = data.access_token;
+    localStorage.setItem('lib_token', TOKEN);
+    await initApp();
+  } catch(e) { errEl.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'دخول'; }
+}
+
+function doLogout() {
+  TOKEN = null; CURRENT_USER = null;
+  localStorage.removeItem('lib_token');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-pass').value = '';
+}
+
+async function initApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  const me = await apiFetch('/auth/me');
+  CURRENT_USER = me;
+  document.getElementById('user-name-display').textContent = me.username;
+  document.getElementById('user-role-display').textContent = me.role;
+  document.getElementById('user-avatar').textContent = me.username[0].toUpperCase();
+  const lvl = roleLevel(me.role);
+  document.querySelectorAll('.librarian-only').forEach(el => el.style.display = lvl >= 3 ? '' : 'none');
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = lvl >= 4 ? '' : 'none');
+  await loadCategories();
+  showPage('dashboard');
+}
+
+function roleLevel(r) { return {student:1,teacher:2,librarian:3,admin:4}[r]||1; }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  ['login-user','login-pass'].forEach(id =>
+    document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); })
+  );
+  if (TOKEN) {
+    try { const me = await apiFetch('/auth/me'); if (me?.id) { await initApp(); return; } }
+    catch(e) {}
+    TOKEN = null; localStorage.removeItem('lib_token');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   API HELPER
+═══════════════════════════════════════════════════════════════════ */
+async function apiFetch(path, opts = {}) {
+  const headers = { ...(opts.headers || {}) };
+  if (!(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+  const r = await fetch(API + path, { ...opts, headers });
+  if (r.status === 401) { doLogout(); throw new Error('Unauthorized'); }
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
+  if (r.status === 204) return null;
+  return r.json();
+}
+
+function apiUploadXHR(method, path, formData, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, API + path);
+    xhr.setRequestHeader('Authorization', `Bearer ${TOKEN}`);
+    if (onProgress) xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); } catch { resolve({}); }
+      } else {
+        try { reject(new Error(JSON.parse(xhr.responseText).detail || xhr.statusText)); }
+        catch { reject(new Error(xhr.statusText)); }
+      }
+    };
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(formData);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════════════ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  const loaders = {
+    dashboard:       loadDashboard,
+    catalog:         () => loadCatalog(1),
+    pdfs:            () => loadPdfs(1),
+    loans:           () => { setLoansView(_loansView); loadNotifications(); if(roleLevel(CURRENT_USER?.role)>=3) { _refreshPendingBadge(); _refreshPendingBorrowsBadge(); } _refreshMyRequestsBadge(); },
+    recommendations: loadRecommendations,
+    categories:      loadCategories_admin,
+    users:           loadUsers,
+  };
+  loaders[name]?.();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOAST & MODALS
+═══════════════════════════════════════════════════════════════════ */
+let _toastTimer;
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `show ${type}`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.className = ''; }, 3400);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   ISBN VALIDATION (client-side)
+═══════════════════════════════════════════════════════════════════ */
+function _checkIsbn(raw) {
+  const s = raw.replace(/[-\s]/g,'').toUpperCase();
+  if (s.length === 10) {
+    if (!/^[\dX]{10}$/.test(s)) return false;
+    let t = 0;
+    for (let i=0; i<10; i++) t += (s[i]==='X'?10:+s[i])*(10-i);
+    return t%11===0;
+  }
+  if (s.length === 13) {
+    if (!/^\d{13}$/.test(s)) return false;
+    let t = 0;
+    for (let i=0; i<12; i++) t += +s[i]*(i%2===0?1:3);
+    return (10-t%10)%10===+s[12];
+  }
+  return false;
+}
+
+function liveIsbn(val) {
+  const icon = document.getElementById('isbn-icon');
+  const msg  = document.getElementById('isbn-msg');
+  if (!val || !val.trim()) { icon.textContent=''; msg.style.display='none'; return true; }
+  const ok = _checkIsbn(val.trim());
+  icon.textContent = ok ? '✓' : '✗';
+  icon.style.color  = ok ? 'var(--green)' : 'var(--red)';
+  msg.style.display = 'block';
+  msg.style.color   = ok ? 'var(--green)' : 'var(--red)';
+  msg.textContent   = ok ? '✓ رقم ISBN صالح' : '✗ رقم ISBN غير صالح — تحقق من الأرقام (ISBN-10 أو ISBN-13)';
+  return ok;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LANGUAGE BUTTON SELECTOR
+═══════════════════════════════════════════════════════════════════ */
+function selectLang(btn, groupId) {
+  const grp = btn.closest('.lang-group') || document.getElementById(groupId||'f-lang-group');
+  grp.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function getLang(groupId) {
+  const grp = document.getElementById(groupId||'f-lang-group');
+  const sel = grp?.querySelector('.lang-btn.selected');
+  return sel ? sel.dataset.lang : 'fr';
+}
+function setLang(groupId, lang) {
+  const grp = document.getElementById(groupId||'f-lang-group');
+  grp?.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.lang === lang);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CATEGORY TAG CHIPS (single-select for book form / filter)
+═══════════════════════════════════════════════════════════════════ */
+function _buildCatChips(containerId, activeCatId, onSelect) {
+  const el = document.getElementById(containerId);
+  if (!el || !window._categories) return;
+  const active = String(activeCatId || '');
+  el.innerHTML =
+    `<span class="tag-chip ${active===''?'selected':''}" onclick="(${onSelect.toString()})(this,'')">الكل</span>` +
+    window._categories.map(c =>
+      `<span class="tag-chip ${active===String(c.id)?'selected':''}"
+             onclick="(${onSelect.toString()})(this,${c.id})">${c.name}</span>`
+    ).join('');
+}
+
+// Filter chips (catalog page)
+function _renderFilterChips(activeCatId) {
+  const el = document.getElementById('cat-chips');
+  if (!el || !window._categories) return;
+  const active = String(activeCatId || '');
+  el.innerHTML =
+    `<span class="tag-chip cat-filter ${active===''?'active':''}" onclick="pickCatFilter(this,'')">الكل</span>` +
+    window._categories.map(c =>
+      `<span class="tag-chip cat-filter ${active===String(c.id)?'active':''}"
+             onclick="pickCatFilter(this,${c.id})">${c.name}</span>`
+    ).join('');
+}
+function pickCatFilter(chip, catId) {
+  document.querySelectorAll('#cat-chips .tag-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  document.getElementById('catalog-cat-val').value = catId || '';
+  loadCatalog(1);
+}
+
+// Form chips (single-select) — returns selected cat id or ''
+function _buildFormChips(containerId, activeCatId) {
+  const el = document.getElementById(containerId);
+  if (!el || !window._categories) return;
+  const active = String(activeCatId || '');
+  el.innerHTML = window._categories.map(c =>
+    `<span class="tag-chip ${active===String(c.id)?'selected':''}"
+           onclick="toggleFormChip(this,'${containerId}')"
+           data-id="${c.id}">${c.name}</span>`
+  ).join('');
+}
+function toggleFormChip(chip, containerId) {
+  document.querySelectorAll(`#${containerId} .tag-chip`).forEach(c => c.classList.remove('selected'));
+  chip.classList.toggle('selected', true);
+}
+function getFormChipVal(containerId) {
+  const sel = document.querySelector(`#${containerId} .tag-chip.selected`);
+  return sel ? sel.dataset.id : '';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CATEGORIES DATA
+═══════════════════════════════════════════════════════════════════ */
+async function loadCategories() {
+  try {
+    const cats = await apiFetch('/catalog/categories');
+    window._categories = cats;
+    // Rebuild any open pickers
+    _renderFilterChips('');
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════════════════════ */
+async function loadDashboard() {
+  document.getElementById('dash-time').textContent = new Date().toLocaleString('ar-DZ');
+  try {
+    const stats = await apiFetch('/stats');
+    const vals = [
+      [stats.total_books, `${Math.round(stats.available_books/Math.max(stats.total_books,1)*100)}% متاح`],
+      [stats.available_books,''],
+      [stats.active_loans,''],
+      [stats.overdue_loans, stats.overdue_loans>0?'تحتاج متابعة':''],
+      [stats.total_pdfs??0,''],
+      [stats.total_users,''],
+    ];
+    document.querySelectorAll('#kpi-grid .kpi').forEach((c,i) => {
+      c.querySelector('.kpi-value').textContent = vals[i][0]??'—';
+      let sub = c.querySelector('.kpi-sub');
+      if (!sub && vals[i][1]) { sub=document.createElement('div'); sub.className='kpi-sub'; c.appendChild(sub); }
+      if (sub) sub.textContent = vals[i][1];
+    });
+  } catch(e) {}
+
+  try {
+    const top = await apiFetch('/dashboard/top-books?limit=6');
+    document.getElementById('top-books-list').innerHTML =
+      (top.books||[]).slice(0,6).map((b,i) => `
+        <div style="display:flex;align-items:center;gap:.7rem;padding:.55rem 1.1rem;border-bottom:1px solid var(--border)">
+          <span style="font-family:var(--mono);font-size:.72rem;color:var(--muted);min-width:16px">${i+1}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.title}</div>
+            <div style="font-size:.72rem;color:var(--muted)">${b.author}</div>
+          </div>
+          <span class="badge badge-blue">${b.borrow_count}×</span>
+        </div>`).join('') || '<div class="empty"><div class="empty-text">لا بيانات</div></div>';
+  } catch(e) {}
+
+  try {
+    const act = await apiFetch('/dashboard/activity?limit=10');
+    const clr = {loan:'var(--accent)',return:'var(--green)',new_book:'var(--gold)',new_user:'var(--muted)'};
+    document.getElementById('activity-list').innerHTML =
+      (act.events||[]).map(e => `
+        <div class="activity-item">
+          <div class="activity-dot" style="background:${clr[e.type]||'var(--muted)'}"></div>
+          <div>
+            <div class="activity-msg">${e.message}</div>
+            <div class="activity-time">${e.timestamp?new Date(e.timestamp).toLocaleString('ar-DZ'):''}</div>
+          </div>
+        </div>`).join('') || '<div class="empty"><div class="empty-text">لا نشاط</div></div>';
+  } catch(e) {}
+
+  try {
+    const ov = await apiFetch('/dashboard/overdue-summary');
+    document.getElementById('overdue-count').textContent = ov.total_overdue;
+    const all = Object.values(ov.buckets||{}).flatMap(b=>b.loans||[]);
+    document.getElementById('overdue-tbody').innerHTML =
+      all.slice(0,8).map(l => `
+        <tr>
+          <td>${l.title||'—'}</td><td>${l.username}</td>
+          <td style="font-family:var(--mono);font-size:.78rem">${(l.due_date||'').slice(0,10)}</td>
+          <td><span class="badge badge-red">${l.days_overdue} يوم</span></td>
+        </tr>`).join('') ||
+      '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">لا تأخيرات ✓</td></tr>';
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CATALOG
+═══════════════════════════════════════════════════════════════════ */
+// Hidden input to hold the currently active category filter from chips
+// We inject it dynamically
+function _ensureCatValInput() {
+  if (!document.getElementById('catalog-cat-val')) {
+    const inp = document.createElement('input');
+    inp.type='hidden'; inp.id='catalog-cat-val'; inp.value='';
+    document.body.appendChild(inp);
+  }
+}
+
+async function loadCatalog(page=1) {
+  _ensureCatValInput();
+  catalogPage = page;
+  const q   = document.getElementById('catalog-q').value.trim();
+  const cat = document.getElementById('catalog-cat-val').value;
+  const lang = document.getElementById('catalog-lang').value;
+  const avail = document.getElementById('catalog-available')?.checked;
+
+  // Sync chip active state
+  _renderFilterChips(cat);
+
+  let url = `/catalog/books?page=${page}&page_size=15`;
+  if (q)     url += `&q=${encodeURIComponent(q)}`;
+  if (cat)   url += `&category_id=${cat}`;
+  if (lang)  url += `&language=${lang}`;
+  if (avail) url += `&available_only=true`;
+
+  const tbody = document.getElementById('catalog-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+
+  try {
+    const data = await apiFetch(url);
+    const lvl  = roleLevel(CURRENT_USER?.role);
+
+    // Status line
+    const parts = [];
+    if (q)    parts.push(`بحث: "${q}"`);
+    if (cat)  parts.push((window._categories||[]).find(c=>String(c.id)===cat)?.name||'');
+    if (lang) parts.push({'fr':'🇫🇷 فرنسية','ar':'🇩🇿 عربية','en':'🇬🇧 إنجليزية'}[lang]||lang);
+    if (avail) parts.push('متاح فقط');
+    document.getElementById('catalog-count').textContent =
+      `${data.total} كتاب` + (parts.length ? ` — ${parts.filter(Boolean).join(' · ')}` : ' في الكتالوج');
+
+    const LANG_LABELS = {fr:'🇫🇷 فرنسية',ar:'🇩🇿 عربية',en:'🇬🇧 إنجليزية'};
+    tbody.innerHTML = (data.results||[]).map(b => `
+      <tr>
+        <td style="cursor:pointer" onclick="openBookDetail(${b.id})">
+          <div style="font-weight:700;font-size:.86rem;color:var(--accent2)">${b.title}</div>
+          ${b.isbn?`<div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)">ISBN: ${b.isbn}</div>`:''}
+        </td>
+        <td style="color:var(--muted2)">${b.author}</td>
+        <td>${b.category_name?`<span class="badge badge-gray">${b.category_name}</span>`:'—'}</td>
+        <td><span class="badge badge-gray">${LANG_LABELS[b.language]||b.language||'—'}</span></td>
+        <td>
+          <span class="badge ${b.available_copies>0?'badge-green':'badge-red'}">${b.available_copies}</span>
+          <span style="color:var(--muted);font-size:.75rem">/${b.total_copies}</span>
+        </td>
+        <td class="td-actions">
+          ${b.available_copies>0?`<button class="btn btn-ghost btn-xs" onclick="borrowBook(${b.id})">استعارة</button>`:''}
+          ${lvl>=3?`<button class="btn btn-ghost btn-xs" onclick="openEditBook(${b.id})">تعديل</button>`:''}
+          ${lvl>=4?`<button class="btn btn-danger btn-xs" onclick="deleteBook(${b.id},'${escQ(b.title)}')">حذف</button>`:''}
+        </td>
+      </tr>`).join('') ||
+      '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">لا توجد كتب</td></tr>';
+
+    buildPagination('catalog-pagination', page, Math.ceil(data.total/15), loadCatalog);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:1rem;text-align:center">${e.message}</td></tr>`;
+  }
+}
+
+function openAddBook() {
+  document.getElementById('modal-book-title').textContent = 'إضافة كتاب';
+  document.getElementById('f-book-id').value = '';
+  ['f-title','f-author','f-isbn','f-publisher','f-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('f-year').value = '';
+  document.getElementById('f-copies').value = 1;
+  setLang('f-lang-group','fr');
+  _buildFormChips('f-cat-picker', '');
+  document.getElementById('isbn-icon').textContent = '';
+  document.getElementById('isbn-msg').style.display = 'none';
+  openModal('modal-book');
+}
+
+async function openEditBook(bookId) {
+  try {
+    const b = await apiFetch(`/catalog/books/${bookId}`);
+    document.getElementById('modal-book-title').textContent = 'تعديل الكتاب';
+    document.getElementById('f-book-id').value   = b.id;
+    document.getElementById('f-title').value     = b.title||'';
+    document.getElementById('f-author').value    = b.author||'';
+    document.getElementById('f-isbn').value      = b.isbn||'';
+    document.getElementById('f-year').value      = b.year||'';
+    document.getElementById('f-copies').value    = b.total_copies||1;
+    document.getElementById('f-publisher').value = b.publisher||'';
+    document.getElementById('f-desc').value      = b.description||'';
+    setLang('f-lang-group', b.language||'fr');
+    _buildFormChips('f-cat-picker', b.category_id||'');
+    document.getElementById('isbn-icon').textContent = '';
+    document.getElementById('isbn-msg').style.display = 'none';
+    if (b.isbn) liveIsbn(b.isbn);
+    openModal('modal-book');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function openBookDetail(bookId) {
+  // Simply open edit modal in view mode — or just open edit for librarians
+  // For students: show a simple toast with location
+  const lvl = roleLevel(CURRENT_USER?.role);
+  if (lvl >= 3) { openEditBook(bookId); return; }
+  try {
+    const b = await apiFetch(`/catalog/books/${bookId}`);
+    toast(`${b.title} — ${b.available_copies>0?'متاح':'غير متاح'}${b.section?` — القسم: ${b.section}`:''}${b.shelf?` رف ${b.shelf}`:''}`);
+  } catch(e) {}
+}
+
+async function submitBook() {
+  const id     = document.getElementById('f-book-id').value;
+  const title  = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  if (!title || !author) { toast('العنوان والمؤلف مطلوبان','error'); return; }
+  const isbnVal = document.getElementById('f-isbn').value.trim();
+  if (isbnVal && !_checkIsbn(isbnVal)) { toast('رقم ISBN غير صالح','error'); return; }
+  const catVal = getFormChipVal('f-cat-picker');
+  const body = {
+    title, author,
+    isbn:        isbnVal||null,
+    category_id: catVal?+catVal:null,
+    year:        document.getElementById('f-year').value?+document.getElementById('f-year').value:null,
+    total_copies:+document.getElementById('f-copies').value||1,
+    language:    getLang('f-lang-group'),
+    publisher:   document.getElementById('f-publisher').value.trim()||null,
+    description: document.getElementById('f-desc').value.trim()||null,
+  };
+  try {
+    if (id) {
+      await apiFetch(`/catalog/books/${id}`,{method:'PUT',body:JSON.stringify(body)});
+      toast('تم تحديث الكتاب ✓');
+    } else {
+      await apiFetch('/catalog/books',{method:'POST',body:JSON.stringify(body)});
+      toast('تمت إضافة الكتاب ✓');
+    }
+    closeModal('modal-book');
+    loadCatalog(catalogPage);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function deleteBook(bookId, title) {
+  if (!confirm(`حذف "${title}"؟`)) return;
+  try {
+    await apiFetch(`/catalog/books/${bookId}`,{method:'DELETE'});
+    toast('تم حذف الكتاب'); loadCatalog(1);
+  } catch(e) {
+    if (e.message?.includes('active loan')) {
+      if (confirm(`⚠️ ${e.message}\n\nإغلاق الإعارات وحذف الكتاب؟`)) {
+        try {
+          await apiFetch(`/catalog/books/${bookId}?force=true`,{method:'DELETE'});
+          toast('تم الحذف ✓'); loadCatalog(1);
+        } catch(e2) { toast(e2.message,'error'); }
+      }
+    } else toast(e.message,'error');
+  }
+}
+
+async function borrowBook(bookId) {
+  try {
+    const b = await apiFetch(`/catalog/books/${bookId}`);
+    document.getElementById('borrow-title').textContent  = b.title;
+    document.getElementById('borrow-author').textContent = b.author;
+    const locEl = document.getElementById('borrow-location');
+    if (b.section||b.shelf||b.position) {
+      locEl.style.display='block';
+      let h='<div style="font-size:.7rem;color:var(--accent2);font-weight:700;margin-bottom:.4rem">📍 موقع الكتاب</div><div style="display:flex;gap:1rem;flex-wrap:wrap">';
+      if (b.section)  h+=`<div><div style="font-size:.65rem;color:var(--muted)">القسم</div><div style="font-weight:700">${b.section}</div></div>`;
+      if (b.shelf)    h+=`<div><div style="font-size:.65rem;color:var(--muted)">الرف</div><div style="font-weight:700">${b.shelf}</div></div>`;
+      if (b.position) h+=`<div><div style="font-size:.65rem;color:var(--muted)">الموضع</div><div style="font-weight:700">${b.position}</div></div>`;
+      locEl.innerHTML = h+'</div>';
+    } else locEl.style.display='none';
+    const pol = {student:'3 كتب · 14 يوماً',teacher:'10 كتب · 30 يوماً',librarian:'15 كتب · 60 يوماً',admin:'غير محدود'};
+    document.getElementById('borrow-policy').textContent = pol[CURRENT_USER?.role]||'';
+    // Update modal text to reflect request flow
+    document.querySelector('#modal-borrow .modal-title').textContent = 'تأكيد طلب الاستعارة';
+    document.getElementById('borrow-confirm-btn').textContent = '📨 إرسال طلب';
+    document.getElementById('borrow-confirm-btn').onclick = async () => {
+      document.getElementById('borrow-confirm-btn').disabled = true;
+      try {
+        await apiFetch('/loans/borrow',{method:'POST',body:JSON.stringify({book_id:bookId})});
+        closeModal('modal-borrow');
+        toast(`✓ تم إرسال طلب الاستعارة — بانتظار تأكيد المسؤول`);
+        loadCatalog(catalogPage);
+        _refreshMyRequestsBadge();
+      } catch(e2) { closeModal('modal-borrow'); toast(e2.message,'error'); }
+      finally { document.getElementById('borrow-confirm-btn').disabled=false; }
+    };
+    openModal('modal-borrow');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PDF MANAGER
+═══════════════════════════════════════════════════════════════════ */
+const LANG_LABELS = {fr:'🇫🇷 فرنسية',ar:'🇩🇿 عربية',en:'🇬🇧 إنجليزية'};
+
+async function loadPdfs(page=1) {
+  pdfPage = page;
+  const tbody = document.getElementById('pdf-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  try {
+    const data = await apiFetch(`/pdfs/?page=${page}&page_size=15`);
+    const lvl  = roleLevel(CURRENT_USER?.role);
+    tbody.innerHTML = (data.results||[]).map(p => `
+      <tr>
+        <td><div style="font-weight:700;font-size:.86rem">${p.title}</div>
+            ${p.category_name?`<span class="badge badge-gray" style="font-size:.68rem">${p.category_name}</span>`:''}
+        </td>
+        <td style="color:var(--muted2)">${p.author||'—'}</td>
+        <td><span class="badge badge-gray">${LANG_LABELS[p.language]||p.language||'—'}</span></td>
+        <td style="font-family:var(--mono);font-size:.78rem">${p.page_count||'—'}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${formatBytes(p.file_size)}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${(p.created_at||'').slice(0,10)}</td>
+        <td class="td-actions">
+          <button class="btn btn-ghost btn-xs" onclick="viewPdf(${p.id},'${escQ(p.title)}')">عرض</button>
+          <button class="btn btn-ghost btn-xs" onclick="downloadPdf(${p.id})">↓</button>
+          ${lvl>=3?`<button class="btn btn-ghost btn-xs" onclick="openEditPdf(${p.id})">تعديل</button>`:''}
+          ${lvl>=4?`<button class="btn btn-danger btn-xs" onclick="deletePdf(${p.id},'${escQ(p.title)}')">حذف</button>`:''}
+        </td>
+      </tr>`).join('') ||
+      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">لا توجد ملفات</td></tr>';
+    buildPagination('pdf-pagination', page, Math.ceil(data.total/15), loadPdfs);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);text-align:center;padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+function openUploadPdf() {
+  _selectedPdfFile = null;
+  document.getElementById('pdf-file-input').value = '';
+  document.getElementById('upload-zone-text').textContent = 'اسحب ملف PDF هنا أو انقر للاختيار';
+  document.getElementById('upload-progress-wrap').style.display = 'none';
+  document.getElementById('upload-progress-bar').style.width = '0%';
+  ['pdf-title','pdf-author'].forEach(id => document.getElementById(id).value='');
+  setLang('pdf-lang-group','fr');
+  _buildFormChips('pdf-cat-picker','');
+  openModal('modal-pdf-upload');
+}
+
+function onPdfFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.pdf')) { toast('يرجى اختيار ملف PDF فقط','error'); return; }
+  if (file.size > 50*1024*1024) { toast('حجم الملف يتجاوز 50 MB','error'); return; }
+  _selectedPdfFile = file;
+  document.getElementById('upload-zone-text').textContent = `📄 ${file.name} (${formatBytes(file.size)})`;
+}
+
+function handlePdfDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (file) onPdfFileSelected({target:{files:[file]}});
+}
+
+async function submitPdfUpload() {
+  if (!_selectedPdfFile) { toast('الرجاء اختيار ملف PDF','error'); return; }
+  const btn = document.getElementById('btn-upload-pdf');
+  btn.disabled = true;
+  document.getElementById('upload-progress-wrap').style.display = 'block';
+  const fd = new FormData();
+  fd.append('file', _selectedPdfFile);
+  const t = document.getElementById('pdf-title').value.trim();
+  const a = document.getElementById('pdf-author').value.trim();
+  const cat = getFormChipVal('pdf-cat-picker');
+  if (t)   fd.append('title',t);
+  if (a)   fd.append('author',a);
+  if (cat) fd.append('category_id',cat);
+  fd.append('language', getLang('pdf-lang-group'));
+  try {
+    await apiUploadXHR('POST', '/pdfs/upload', fd, pct => {
+      document.getElementById('upload-progress-bar').style.width = `${Math.round(pct*100)}%`;
+    });
+    toast('تم رفع الملف وفهرسته ✓');
+    closeModal('modal-pdf-upload');
+    loadPdfs(1);
+  } catch(e) { toast(e.message,'error'); }
+  finally { btn.disabled=false; }
+}
+
+async function openEditPdf(id) {
+  try {
+    const p = await apiFetch(`/pdfs/${id}`);
+    document.getElementById('edit-pdf-id').value    = p.id;
+    document.getElementById('edit-pdf-title').value  = p.title||'';
+    document.getElementById('edit-pdf-author').value = p.author||'';
+    setLang('edit-pdf-lang-group', p.language||'fr');
+    _buildFormChips('edit-pdf-cat-picker', p.category_id||'');
+    _editPdfFile = null;
+    document.getElementById('edit-pdf-file').value = '';
+    document.getElementById('edit-upload-text').textContent = 'اترك فارغاً للاحتفاظ بالملف الحالي';
+    openModal('modal-pdf-edit');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function onEditPdfFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.pdf')) { toast('ملف PDF فقط','error'); return; }
+  _editPdfFile = file;
+  document.getElementById('edit-upload-text').textContent = `📄 ${file.name} (${formatBytes(file.size)})`;
+}
+
+async function submitPdfEdit() {
+  const id    = document.getElementById('edit-pdf-id').value;
+  const title = document.getElementById('edit-pdf-title').value.trim();
+  if (!title) { toast('العنوان مطلوب','error'); return; }
+  const btn = document.getElementById('btn-save-pdf-edit');
+  btn.disabled = true;
+  const fd = new FormData();
+  fd.append('title',  title);
+  fd.append('author', document.getElementById('edit-pdf-author').value.trim());
+  fd.append('language', getLang('edit-pdf-lang-group'));
+  const cat = getFormChipVal('edit-pdf-cat-picker');
+  fd.append('category_id', cat||'');
+  if (_editPdfFile) fd.append('file', _editPdfFile);
+  try {
+    await apiUploadXHR('PUT', `/pdfs/${id}`, fd);
+    toast('تم تحديث ملف PDF ✓');
+    closeModal('modal-pdf-edit');
+    loadPdfs(pdfPage);
+  } catch(e) { toast(e.message,'error'); }
+  finally { btn.disabled=false; }
+}
+
+function viewPdf(id, title) {
+  document.getElementById('pdf-view-title').textContent = title;
+  const t = TOKEN||'';
+  document.getElementById('pdf-viewer-frame').src = `${API}/pdfs/${id}/view?token=${encodeURIComponent(t)}&_=${Date.now()}`;
+  document.getElementById('pdf-download-link').href = `${API}/pdfs/${id}/download?token=${encodeURIComponent(t)}`;
+  openModal('modal-pdf-view');
+}
+
+async function downloadPdf(id) {
+  try {
+    const resp = await fetch(`${API}/pdfs/${id}/download`,{headers:{'Authorization':`Bearer ${TOKEN}`}});
+    if (!resp.ok) throw new Error('Download failed');
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `document_${id}.pdf`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function deletePdf(id, title) {
+  if (!confirm(`حذف "${title}"؟`)) return;
+  try {
+    await apiFetch(`/pdfs/${id}`,{method:'DELETE'});
+    toast('تم حذف الملف'); loadPdfs(1);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function searchPdfs() {
+  const q = document.getElementById('pdf-search-q').value.trim();
+  if (!q) return;
+  const el = document.getElementById('pdf-search-results');
+  el.innerHTML = '<div class="loader"></div>';
+  try {
+    const data = await apiFetch(`/pdfs/search?q=${encodeURIComponent(q)}&limit=8`);
+    el.innerHTML = (data.results||[]).length ?
+      `<div style="font-size:.78rem;color:var(--muted);margin-bottom:.6rem">${data.results.length} نتيجة</div>` +
+      data.results.map(r => `
+        <div class="book-card">
+          <div style="display:flex;justify-content:space-between;gap:.5rem">
+            <div>
+              <div style="font-weight:700;font-size:.88rem">⊞ ${r.title}</div>
+              ${r.author?`<div style="font-size:.78rem;color:var(--muted)">${r.author}</div>`:''}
+              ${r.snippet?`<div style="font-size:.78rem;color:var(--muted2);margin-top:.35rem;line-height:1.6">${r.snippet}</div>`:''}
+            </div>
+            <button class="btn btn-ghost btn-xs" onclick="viewPdf(${r.id},'${escQ(r.title)}')">عرض</button>
+          </div>
+        </div>`).join('') :
+      '<div class="empty"><div class="empty-text">لا نتائج مطابقة</div></div>';
+  } catch(e) {
+    el.innerHTML = `<div class="empty"><div class="empty-text" style="color:var(--red)">${e.message}</div></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOANS
+═══════════════════════════════════════════════════════════════════ */
+function setLoansView(view) {
+  _loansView = view;
+  ['mine','active','pending','pending-borrows','myrequests'].forEach(v => {
+    const btn = document.getElementById(`btn-loans-${v}`);
+    if (btn) btn.className = btn.className.replace('btn-primary','btn-ghost');
+  });
+  const aBtn = document.getElementById('btn-loans-all-users');
+  if (aBtn) aBtn.className = aBtn.className.replace('btn-primary','btn-ghost');
+  const target = view==='all'
+    ? document.getElementById('btn-loans-all-users')
+    : document.getElementById(`btn-loans-${view}`);
+  if (target) target.className = target.className.replace('btn-ghost','btn-primary');
+  const lvl = roleLevel(CURRENT_USER?.role);
+  const allBtn = document.getElementById('btn-loans-all-users');
+  if (allBtn) allBtn.style.display = lvl>=3?'':'none';
+  const pendBtn = document.getElementById('btn-loans-pending');
+  if (pendBtn) pendBtn.style.display = lvl>=3?'':'none';
+  const pendBorrowBtn = document.getElementById('btn-loans-pending-borrows');
+  if (pendBorrowBtn) pendBorrowBtn.style.display = lvl>=3?'':'none';
+  if (view === 'pending') { loadPendingReturns(); return; }
+  if (view === 'pending-borrows') { loadPendingBorrows(); return; }
+  if (view === 'myrequests') { loadMyBorrowRequests(); return; }
+  loadLoans();
+}
+
+async function loadLoans() {
+  const tbody = document.getElementById('loans-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  const lvl = roleLevel(CURRENT_USER?.role);
+  try {
+    let rows, total;
+    if (_loansView==='all' && lvl>=3) {
+      const data = await apiFetch('/loans/all?page_size=50');
+      rows = data.results||[]; total = data.total;
+      document.getElementById('loans-sub').textContent = `${total} إعارة — كل المستخدمين`;
+    } else if (_loansView==='active') {
+      rows = await apiFetch('/loans/my?active_only=true')||[];
+      document.getElementById('loans-sub').textContent = 'إعاراتي النشطة';
+    } else {
+      rows = await apiFetch('/loans/my?active_only=false')||[];
+      document.getElementById('loans-sub').textContent = `كل إعاراتي (${rows.length})`;
+    }
+
+    function _returnBtn(l) {
+      if (l.return_date) return '';
+      if (l.return_request_status === 'pending') {
+        return `<span class="badge badge-gold" style="font-size:.72rem">⏳ في الانتظار</span>`;
+      }
+      return `<button class="btn btn-success btn-xs" onclick="requestReturn(${l.id})">طلب إرجاع</button>`;
+    }
+
+    tbody.innerHTML = rows.map(l => `
+      <tr>
+        <td>
+          <div style="font-weight:700;font-size:.86rem">${l.book_title||'كتاب محذوف'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${l.book_author||''}</div>
+        </td>
+        <td>${l.username||'—'}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${(l.loan_date||'').slice(0,10)}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">${(l.due_date||'').slice(0,10)}</td>
+        <td>${l.return_date
+          ?'<span class="badge badge-green">مُرجَع</span>'
+          :l.is_overdue
+            ?`<span class="badge badge-red">متأخر ${Math.abs(l.days_remaining||0)}ي</span>`
+            :`<span class="badge badge-blue">${l.days_remaining}ي</span>`}
+        </td>
+        <td>${_returnBtn(l)}</td>
+      </tr>`).join('') ||
+      '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">لا توجد إعارات</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+async function loadPendingReturns() {
+  const tbody = document.getElementById('loans-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  document.getElementById('loans-sub').textContent = 'طلبات الإرجاع بانتظار التأكيد';
+  try {
+    const data = await apiFetch('/loans/pending-returns');
+    const badge = document.getElementById('pending-badge');
+    if (badge) {
+      badge.textContent = data.count;
+      badge.style.display = data.count ? '' : 'none';
+    }
+    if (!data.requests?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">✓ لا توجد طلبات معلقة</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.requests.map(r => `
+      <tr>
+        <td>
+          <div style="font-weight:700;font-size:.86rem">${r.book_title||'كتاب محذوف'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.book_author||''}</div>
+          ${r.book_isbn?`<div style="font-size:.68rem;color:var(--muted);font-family:var(--mono)">ISBN: ${r.book_isbn}</div>`:''}
+        </td>
+        <td>
+          <div style="font-weight:600">${r.username}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.full_name||''}</div>
+        </td>
+        <td style="font-family:var(--mono);font-size:.78rem">${(r.loan_date||'').slice(0,10)}</td>
+        <td style="font-family:var(--mono);font-size:.78rem">
+          ${(r.due_date||'').slice(0,10)}
+          ${r.days_overdue>0?`<br><span class="badge badge-red" style="font-size:.65rem">${r.days_overdue}ي تأخير</span>`:''}
+        </td>
+        <td><span class="badge badge-gold">⏳ بانتظار التأكيد</span>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">${(r.requested_at||'').slice(0,16).replace('T',' ')}</div>
+        </td>
+        <td class="td-actions">
+          <button class="btn btn-success btn-xs" onclick="confirmReturn(${r.loan_id})">✓ تأكيد</button>
+          <button class="btn btn-danger btn-xs"  onclick="rejectReturn(${r.loan_id})">✗ رفض</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+async function loadNotifications() {
+  try {
+    const data = await apiFetch('/loans/notifications');
+    const el = document.getElementById('loans-notifications');
+    if (!data.alerts?.length) { el.innerHTML=''; return; }
+    el.innerHTML = data.alerts.map(a => `
+      <div style="background:${a.alert_type==='overdue'?'rgba(240,82,82,.08)':'rgba(240,180,41,.08)'};
+        border:1px solid ${a.alert_type==='overdue'?'rgba(240,82,82,.2)':'rgba(240,180,41,.2)'};
+        border-radius:var(--r);padding:.65rem 1rem;margin-bottom:.4rem;
+        display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:.82rem;font-weight:700">${a.alert_message}</div>
+          <div style="font-size:.78rem;margin-top:.1rem">${a.book_title||''}</div>
+        </div>
+        ${a.return_request_status==='pending'
+          ? `<span class="badge badge-gold" style="font-size:.72rem">⏳ طلب إرجاع معلق</span>`
+          : `<button class="btn btn-ghost btn-xs" onclick="requestReturn(${a.id})">طلب إرجاع</button>`
+        }
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function requestReturn(loanId) {
+  if (!confirm('إرسال طلب إرجاع الكتاب؟ سيتم تأكيده من طرف المسؤول.')) return;
+  try {
+    await apiFetch(`/loans/request-return/${loanId}`, {method:'POST', body:JSON.stringify({})});
+    toast('✓ تم إرسال طلب الإرجاع — بانتظار تأكيد المسؤول');
+    loadLoans(); loadNotifications();
+    // Refresh pending badge if librarian
+    if (roleLevel(CURRENT_USER?.role) >= 3) _refreshPendingBadge();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function confirmReturn(loanId) {
+  if (!confirm('تأكيد استلام الكتاب وإغلاق الإعارة؟')) return;
+  try {
+    await apiFetch(`/loans/confirm-return/${loanId}`, {method:'POST', body:JSON.stringify({})});
+    toast('✓ تم تأكيد الإرجاع وإغلاق الإعارة');
+    loadPendingReturns();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function rejectReturn(loanId) {
+  if (!confirm('رفض طلب الإرجاع؟ ستبقى الإعارة نشطة.')) return;
+  try {
+    await apiFetch(`/loans/reject-return/${loanId}`, {method:'POST', body:JSON.stringify({})});
+    toast('تم رفض طلب الإرجاع', 'error');
+    loadPendingReturns();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function _refreshPendingBadge() {
+  try {
+    const data = await apiFetch('/loans/pending-returns');
+    const badge = document.getElementById('pending-badge');
+    if (badge) {
+      badge.textContent = data.count;
+      badge.style.display = data.count ? '' : 'none';
+    }
+  } catch(e) {}
+}
+
+async function _refreshPendingBorrowsBadge() {
+  try {
+    const data = await apiFetch('/loans/pending-borrows');
+    const badge = document.getElementById('pending-borrows-badge');
+    if (badge) {
+      badge.textContent = data.count;
+      badge.style.display = data.count ? '' : 'none';
+    }
+  } catch(e) {}
+}
+
+async function _refreshMyRequestsBadge() {
+  try {
+    const data = await apiFetch('/loans/my-borrow-requests');
+    const pending = (data.requests||[]).filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('myrequests-badge');
+    if (badge) {
+      badge.textContent = pending;
+      badge.style.display = pending ? '' : 'none';
+    }
+  } catch(e) {}
+}
+
+async function loadPendingBorrows() {
+  const tbody = document.getElementById('loans-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  document.getElementById('loans-sub').textContent = 'طلبات الاستعارة بانتظار التأكيد';
+  try {
+    const data = await apiFetch('/loans/pending-borrows');
+    const badge = document.getElementById('pending-borrows-badge');
+    if (badge) {
+      badge.textContent = data.count;
+      badge.style.display = data.count ? '' : 'none';
+    }
+    if (!data.requests?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">✓ لا توجد طلبات استعارة معلقة</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.requests.map(r => `
+      <tr>
+        <td>
+          <div style="font-weight:700;font-size:.86rem">${r.book_title||'—'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.book_author||''}</div>
+          ${r.book_isbn?`<div style="font-size:.68rem;color:var(--muted);font-family:var(--mono)">ISBN: ${r.book_isbn}</div>`:''}
+          <span class="badge ${r.available_copies>0?'badge-green':'badge-red'}" style="font-size:.68rem;margin-top:.2rem">${r.available_copies>0?'متاح':'غير متاح'}</span>
+        </td>
+        <td>
+          <div style="font-weight:600">${r.username}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.full_name||''}</div>
+          <span class="badge badge-gray" style="font-size:.67rem">${r.user_role||''}</span>
+        </td>
+        <td colspan="2" style="font-family:var(--mono);font-size:.78rem;color:var(--muted2)">
+          ${(r.requested_at||'').slice(0,16).replace('T',' ')}
+        </td>
+        <td><span class="badge badge-gold">⏳ بانتظار التأكيد</span></td>
+        <td class="td-actions">
+          <button class="btn btn-success btn-xs" onclick="confirmBorrow(${r.request_id})">✓ تأكيد</button>
+          <button class="btn btn-danger btn-xs"  onclick="rejectBorrow(${r.request_id})">✗ رفض</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+async function loadMyBorrowRequests() {
+  const tbody = document.getElementById('loans-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  document.getElementById('loans-sub').textContent = 'طلبات الاستعارة المقدّمة';
+  try {
+    const data = await apiFetch('/loans/my-borrow-requests');
+    if (!data.requests?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">لم تقدّم أي طلبات استعارة بعد</td></tr>';
+      return;
+    }
+    const statusBadge = {
+      pending:   '<span class="badge badge-gold">⏳ بانتظار التأكيد</span>',
+      confirmed: '<span class="badge badge-green">✓ مقبول</span>',
+      rejected:  '<span class="badge badge-red">✗ مرفوض</span>',
+    };
+    tbody.innerHTML = data.requests.map(r => `
+      <tr>
+        <td>
+          <div style="font-weight:700;font-size:.86rem">${r.book_title||'—'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.book_author||''}</div>
+        </td>
+        <td colspan="3" style="font-family:var(--mono);font-size:.78rem;color:var(--muted2)">
+          ${(r.requested_at||'').slice(0,16).replace('T',' ')}
+        </td>
+        <td>${statusBadge[r.status]||r.status}</td>
+        <td>${r.status==='rejected'?'<span style="font-size:.75rem;color:var(--red)">تم رفض الطلب</span>':''}</td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:1rem">${e.message}</td></tr>`;
+  }
+}
+
+async function confirmBorrow(requestId) {
+  if (!confirm('تأكيد طلب الاستعارة وفتح الإعارة؟')) return;
+  try {
+    await apiFetch(`/loans/confirm-borrow/${requestId}`, {method:'POST', body:JSON.stringify({})});
+    toast('✓ تم تأكيد الاستعارة وفتح الإعارة');
+    loadPendingBorrows();
+    _refreshPendingBorrowsBadge();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function rejectBorrow(requestId) {
+  if (!confirm('رفض طلب الاستعارة؟')) return;
+  try {
+    await apiFetch(`/loans/reject-borrow/${requestId}`, {method:'POST', body:JSON.stringify({})});
+    toast('تم رفض طلب الاستعارة', 'error');
+    loadPendingBorrows();
+    _refreshPendingBorrowsBadge();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RECOMMENDATIONS
+═══════════════════════════════════════════════════════════════════ */
+async function loadRecommendations() {
+  const grid = document.getElementById('rec-grid');
+  grid.innerHTML = '<div style="padding:2rem;text-align:center"><div class="loader"></div></div>';
+  try {
+    const data = await apiFetch('/recommendations/me?limit=12');
+    document.getElementById('rec-strategy').textContent =
+      `الاستراتيجيات: ${(data.strategies_used||[]).join(' · ')}`;
+    const books = data.recommendations||[];
+    if (!books.length) {
+      grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">✦</div><div class="empty-text">لا توجد توصيات — أضف كتباً وابدأ الاستعارة</div></div>';
+      return;
+    }
+    grid.innerHTML = books.map((b,i) => `
+      <div class="rec-card" style="animation:fadeIn .35s ease ${i*.05}s both" onclick="borrowBook(${b.id})">
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:.3rem">${b.category_name||'—'}</div>
+        <div style="font-size:.9rem;font-weight:800;margin-bottom:.2rem;line-height:1.3">${b.title}</div>
+        <div style="font-size:.78rem;color:var(--muted2);margin-bottom:.6rem">${b.author}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto">
+          <span class="badge ${b.available_copies>0?'badge-green':'badge-gray'}">${b.available_copies>0?'متاح':'غير متاح'}</span>
+          ${b.available_copies>0
+            ?`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();borrowBook(${b.id})">استعارة</button>`
+            :''}
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-text" style="color:var(--red)">${e.message}</div></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CATEGORIES ADMIN
+═══════════════════════════════════════════════════════════════════ */
+async function loadCategories_admin() {
+  const tbody = document.getElementById('categories-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1.5rem"><div class="loader"></div></td></tr>';
+  try {
+    const [cats,stats] = await Promise.all([
+      apiFetch('/catalog/categories'),
+      apiFetch('/catalog/stats'),
+    ]);
+    window._categories = cats;
+    const cm = {}; (stats.by_category||[]).forEach(c => { cm[c.name]=c.total; });
+    tbody.innerHTML = cats.map(c => `
+      <tr>
+        <td><span class="badge badge-gray">${c.name}</span></td>
+        <td style="color:var(--muted2);font-size:.82rem">${c.description||'—'}</td>
+        <td><span class="badge badge-blue">${cm[c.name]||0} كتاب</span></td>
+        <td class="td-actions">
+          <button class="btn btn-ghost btn-xs" onclick="openEditCategory(${c.id},'${escQ(c.name)}','${escQ(c.description||'')}')">تعديل</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteCategory(${c.id},'${escQ(c.name)}')">حذف</button>
+        </td>
+      </tr>`).join('') ||
+      '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem">لا تصنيفات</td></tr>';
+  } catch(e) {}
+}
+
+function openAddCategory() {
+  document.getElementById('modal-cat-title').textContent='تصنيف جديد';
+  document.getElementById('f-cat-id').value='';
+  document.getElementById('f-cat-name').value='';
+  document.getElementById('f-cat-desc').value='';
+  openModal('modal-category');
+}
+function openEditCategory(id,name,desc) {
+  document.getElementById('modal-cat-title').textContent='تعديل التصنيف';
+  document.getElementById('f-cat-id').value=id;
+  document.getElementById('f-cat-name').value=name;
+  document.getElementById('f-cat-desc').value=desc;
+  openModal('modal-category');
+}
+async function submitCategory() {
+  const id   = document.getElementById('f-cat-id').value;
+  const name = document.getElementById('f-cat-name').value.trim();
+  const desc = document.getElementById('f-cat-desc').value.trim();
+  if (!name) { toast('اسم التصنيف مطلوب','error'); return; }
+  try {
+    if (id) {
+      await apiFetch(`/catalog/categories/${id}`,{method:'PUT',body:JSON.stringify({name,description:desc||null})});
+      toast('تم التحديث ✓');
+    } else {
+      await apiFetch('/catalog/categories',{method:'POST',body:JSON.stringify({name,description:desc||null})});
+      toast('تمت الإضافة ✓');
+    }
+    closeModal('modal-category');
+    loadCategories_admin();
+    loadCategories();
+  } catch(e) { toast(e.message,'error'); }
+}
+async function deleteCategory(id,name) {
+  if (!confirm(`حذف تصنيف "${name}"؟`)) return;
+  try {
+    await apiFetch(`/catalog/categories/${id}`,{method:'DELETE'});
+    toast('تم الحذف'); loadCategories_admin(); loadCategories();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   USERS
+═══════════════════════════════════════════════════════════════════ */
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  try {
+    const users = await apiFetch('/auth/users');
+    const rc = {student:'badge-gray',teacher:'badge-blue',librarian:'badge-gold',admin:'badge-red'};
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td>
+          <div style="font-weight:700">${u.username}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${u.full_name||''}</div>
+        </td>
+        <td style="font-family:var(--mono);font-size:.78rem;color:var(--muted2)">${u.email}</td>
+        <td><span class="badge ${rc[u.role]||'badge-gray'}">${u.role}</span></td>
+        <td>${u.is_active?'<span class="badge badge-green">نشط</span>':'<span class="badge badge-red">معطّل</span>'}</td>
+        <td class="td-actions">
+          <button class="btn btn-ghost btn-xs" onclick="openEditUser('${escQ(u.username)}','${escQ(u.email)}','${escQ(u.full_name||'')}','${u.role}',${u.is_active})">تعديل</button>
+          <select onchange="changeRole('${u.username}',this.value)"
+            style="padding:.22rem .4rem;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--font);font-size:.72rem">
+            ${['student','teacher','librarian','admin'].map(r=>`<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+          </select>
+          ${u.is_active&&u.username!==CURRENT_USER?.username
+            ?`<button class="btn btn-danger btn-xs" onclick="deactivateUser('${u.username}')">تعطيل</button>`
+            :`${!u.is_active?`<button class="btn btn-success btn-xs" onclick="activateUser('${u.username}')">تفعيل</button>`:''}`}
+        </td>
+      </tr>`).join('');
+  } catch(e) {}
+}
+async function changeRole(username,role) {
+  try {
+    await apiFetch(`/auth/users/${username}/role?new_role=${role}`,{method:'PATCH'});
+    toast(`تم تغيير دور ${username} ✓`); loadUsers();
+  } catch(e) { toast(e.message,'error'); loadUsers(); }
+}
+async function deactivateUser(username) {
+  if (!confirm(`تعطيل ${username}؟`)) return;
+  try {
+    await apiFetch(`/auth/users/${username}/deactivate`,{method:'PATCH'});
+    toast(`تم تعطيل ${username}`); loadUsers();
+  } catch(e) { toast(e.message,'error'); }
+}
+async function activateUser(username) {
+  if (!confirm(`إعادة تفعيل ${username}؟`)) return;
+  try {
+    await apiFetch(`/auth/users/${username}/activate`,{method:'PATCH'});
+    toast(`تم تفعيل ${username} ✓`); loadUsers();
+  } catch(e) { toast(e.message,'error'); }
+}
+function openEditUser(username, email, fullName, role, isActive) {
+  document.getElementById('eu-orig-username').value = username;
+  document.getElementById('eu-username').value  = username;
+  document.getElementById('eu-email').value     = email;
+  document.getElementById('eu-fullname').value  = fullName;
+  document.getElementById('eu-password').value  = '';
+  document.getElementById('eu-role').value      = role;
+  document.getElementById('eu-active').checked  = !!isActive;
+  openModal('modal-edit-user');
+}
+async function submitEditUser() {
+  const origUsername = document.getElementById('eu-orig-username').value;
+  const body = {};
+  const username  = document.getElementById('eu-username').value.trim();
+  const email     = document.getElementById('eu-email').value.trim();
+  const fullName  = document.getElementById('eu-fullname').value.trim();
+  const password  = document.getElementById('eu-password').value;
+  const role      = document.getElementById('eu-role').value;
+  const isActive  = document.getElementById('eu-active').checked;
+
+  if (username)  body.username  = username;
+  if (email)     body.email     = email;
+  body.full_name = fullName || null;
+  if (password)  body.password  = password;
+  body.is_active = isActive;
+
+  try {
+    await apiFetch(`/auth/users/${origUsername}`, {method:'PUT', body:JSON.stringify(body)});
+    // Update role separately if changed
+    const origRole = document.getElementById('eu-role').dataset.orig;
+    if (role !== origRole) {
+      await apiFetch(`/auth/users/${username||origUsername}/role?new_role=${role}`,{method:'PATCH'});
+    }
+    closeModal('modal-edit-user');
+    toast('تم تحديث بيانات المستخدم ✓');
+    loadUsers();
+  } catch(e) { toast(e.message,'error'); }
+}
+function openAddUser() {
+  ['u-username','u-email','u-fullname','u-password'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('u-role').value='student';
+  openModal('modal-add-user');
+}
+async function submitAddUser() {
+  const body = {
+    username:  document.getElementById('u-username').value.trim(),
+    email:     document.getElementById('u-email').value.trim(),
+    full_name: document.getElementById('u-fullname').value.trim()||null,
+    password:  document.getElementById('u-password').value,
+    role:      document.getElementById('u-role').value,
+  };
+  if (!body.username||!body.email||!body.password) { toast('كل الحقول المطلوبة يجب تعبئتها','error'); return; }
+  try {
+    await apiFetch('/auth/register',{method:'POST',body:JSON.stringify(body)});
+    closeModal('modal-add-user');
+    toast(`تم إنشاء ${body.username} ✓`);
+    loadUsers();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════════════ */
+function buildPagination(containerId, current, totalPages, fn) {
+  const el = document.getElementById(containerId);
+  if (totalPages<=1) { el.innerHTML=''; return; }
+  let html = `<button ${current===1?'disabled':''} onclick="${fn.name}(${current-1})">‹</button>`;
+  const s=Math.max(1,current-2), e=Math.min(totalPages,current+2);
+  for (let p=s;p<=e;p++) html+=`<button class="${p===current?'current':''}" onclick="${fn.name}(${p})">${p}</button>`;
+  html+=`<button ${current===totalPages?'disabled':''} onclick="${fn.name}(${current+1})">›</button>`;
+  el.innerHTML=html;
+}
+
+function formatBytes(b) {
+  if (!b) return '—';
+  if (b<1024) return b+' B';
+  if (b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/(1024*1024)).toFixed(1)+' MB';
+}
+
+function escQ(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+</script>
+</body>
+</html>

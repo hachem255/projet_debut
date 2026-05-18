@@ -1,0 +1,42 @@
+# Smart Library Platform — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Core web framework ────────────────────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9        # required for UploadFile / Form
+
+# ── Windows-compatible production server ─────────────────────────────────────
+waitress>=3.0.0                # WSGI server, works on Windows AND Linux
+
+# ── Linux/Mac production server (optional) ───────────────────────────────────
+# gunicorn>=21.0.0             # only needed for Gunicorn deployments
+
+# ── Authentication ────────────────────────────────────────────────────────────
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# ── Database / ORM ───────────────────────────────────────────────────────────
+# SQLite is bundled with Python — no extra package needed
+
+# ── Semantic search ───────────────────────────────────────────────────────────
+sentence-transformers>=2.7.0
+faiss-cpu>=1.7.4               # use faiss-gpu if you have a CUDA GPU
+numpy>=1.26.0
+scikit-learn>=1.4.0
+
+# ── PDF processing ────────────────────────────────────────────────────────────
+pdfplumber>=0.11.0             # primary text extraction (better layout)
+pypdf>=4.0.0                   # fallback text extraction + metadata
+
+# ── Async file I/O ───────────────────────────────────────────────────────────
+aiofiles>=23.2.1
+
+# ── Pydantic (FastAPI data validation) ───────────────────────────────────────
+pydantic>=2.6.0
+
+# ── Optional: OCR for scanned PDFs ───────────────────────────────────────────
+# pytesseract>=0.3.10
+# pdf2image>=1.17.0
+# Pillow>=10.0.0
+# NOTE: also requires Tesseract binary installed on OS
