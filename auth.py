@@ -158,7 +158,7 @@ _conn_seed.close()
 # ---------------------------------------------------------------------------
 
 def _send_verification_email(target_email: str, code: str) -> None:
-    """Send a 6-digit OTP via Gmail SMTP SSL.
+    """Send a 6-digit OTP via Gmail SMTP SSL with fallback options.
 
     Credentials are read from env at *call time* so that a freshly loaded
     .env file is always used even if the module was imported first.
@@ -187,25 +187,49 @@ def _send_verification_email(target_email: str, code: str) -> None:
         "إذا لم تطلب هذا الرمز يمكنك تجاهل هذه الرسالة."
     )
 
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
-            smtp.login(gmail_user, gmail_pass)
-            smtp.send_message(msg)
-    except smtplib.SMTPAuthenticationError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                f"Gmail authentication failed: {exc.smtp_error.decode(errors='replace') if hasattr(exc, 'smtp_error') else exc}. "
+    # Try primary method: SMTP_SSL on port 465
+    smtp_configs = [
+        ("smtp.gmail.com", 465, True, "SMTP_SSL (port 465)"),
+        ("smtp.gmail.com", 587, False, "SMTP_STARTTLS (port 587)"),
+    ]
+
+    last_error = None
+    for smtp_host, smtp_port, use_ssl, method_name in smtp_configs:
+        try:
+            if use_ssl:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10) as smtp:
+                    smtp.login(gmail_user, gmail_pass)
+                    smtp.send_message(msg)
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as smtp:
+                    smtp.starttls()
+                    smtp.login(gmail_user, gmail_pass)
+                    smtp.send_message(msg)
+            return  # Success!
+        except smtplib.SMTPAuthenticationError as exc:
+            last_error = (
+                f"Gmail authentication failed ({method_name}). "
                 "Make sure you are using a Gmail App Password "
                 "(not your regular password). "
                 "Generate one at: https://myaccount.google.com/apppasswords"
-            ),
-        )
-    except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Failed to send verification email: {exc}",
-        )
+            )
+            continue
+        except (TimeoutError, OSError, smtplib.SMTPException) as exc:
+            last_error = str(exc)
+            continue
+
+    # If we get here, both methods failed
+    raise HTTPException(
+        status_code=503,
+        detail=(
+            f"Failed to send verification email: {last_error}. "
+            "Check your Gmail credentials and ensure:\n"
+            "1. GMAIL_EMAIL is a valid Gmail address\n"
+            "2. GMAIL_APP_PASSWORD is a 16-char App Password (no spaces)\n"
+            "3. Your network allows outbound SMTP (ports 465 or 587)\n"
+            "Generate app password at: https://myaccount.google.com/apppasswords"
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -346,8 +370,6 @@ def require_role(minimum_role: str):
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-# ── Diagnostics — admin only ─────────────────────────────────────────────────
-
 @router.get("/debug-email")
 async def debug_email_config(admin=Depends(require_role("admin"))):
     """
@@ -363,15 +385,40 @@ async def debug_email_config(admin=Depends(require_role("admin"))):
     if gmail_pass:
         masked_pass = gmail_pass[:4] + "*" * (len(gmail_pass) - 4)
 
+    # Try to test the connection
+    connection_status = "Unknown"
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=5) as smtp:
+            connection_status = "Port 465 reachable ✓"
+    except Exception as e:
+        connection_status = f"Port 465 failed: {type(e).__name__}: {str(e)[:50]}"
+
     return {
         "GMAIL_EMAIL":        gmail_user or "(not set)",
         "GMAIL_APP_PASSWORD": masked_pass or "(not set)",
         "password_length":    len(gmail_pass),
+        "smtp_connection":    connection_status,
         "tip": (
             "App Password must be exactly 16 characters (no spaces). "
             "Generate at: https://myaccount.google.com/apppasswords"
         ),
     }
+
+
+@router.post("/test-email")
+async def test_email_send(admin=Depends(require_role("admin"))):
+    """
+    Attempt to send a test email to verify Gmail configuration.
+    Admin only.
+    """
+    _load_env_if_needed()
+    gmail_user = os.getenv("GMAIL_EMAIL", "").strip()
+    
+    try:
+        _send_verification_email(gmail_user, "123456")
+        return {"status": "success", "message": f"Test email sent to {gmail_user}"}
+    except HTTPException as e:
+        return {"status": "error", "message": e.detail}
 
 
 # ── Public self-registration — step 1: request OTP ──────────────────────────
@@ -380,7 +427,7 @@ async def debug_email_config(admin=Depends(require_role("admin"))):
 async def request_verification_code(body: RequestVerificationCodeBody):
     """
     Public — no authentication required.
-    Sends a 6-digit OTP to the provided email address.
+    Sends a 7-digit OTP to the provided email address.
     Only 'student' and 'teacher' roles are allowed for self-registration.
     """
     role = (body.role or "student").strip().lower()
@@ -403,7 +450,7 @@ async def request_verification_code(body: RequestVerificationCodeBody):
         ).fetchone():
             raise HTTPException(status_code=409, detail="Username or email already exists")
 
-        code = f"{secrets.randbelow(1_000_000):06d}"
+        code = f"{secrets.randbelow(10_000_000):07d}"
         payload_data = {
             "username":  body.username.strip(),
             "email":     email,
@@ -438,8 +485,8 @@ async def verify_signup(body: VerifySignupBody):
     code  = "".join(body.code.split())  # remove all whitespace/newlines
     if not email or not code:
         raise HTTPException(status_code=400, detail="Email and code are required")
-    if not code.isdigit() or len(code) != 6:
-        raise HTTPException(status_code=400, detail="Verification code must be exactly 6 digits")
+    if not code.isdigit() or len(code) != 7:
+        raise HTTPException(status_code=400, detail="Verification code must be exactly 7 digits")
 
     conn = get_users_db()
     try:

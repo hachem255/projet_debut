@@ -13,7 +13,6 @@
   /* Backgrounds */
   --bg:#070a12;
   --bg2:rgba(255,255,255,0.055);
-  --bg3:rgba(255,255,255,0.038);
   --bg4:rgba(255,255,255,0.025);
   /* Glass */
   --glass:rgba(255,255,255,0.065);
@@ -303,9 +302,9 @@ tr:hover td{background:rgba(94,156,255,.06)}
 .search-bar{display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap}
 .search-input{
   flex:1;min-width:180px;padding:.65rem 1rem;
-  background:rgba(255,255,255,.07);
+  background:#0c0f18;
   backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.15);
+  border:1px solid rgba(255, 255, 255, 0.1);
   border-radius:var(--r);
   color:var(--text);font-family:var(--font);font-size:.88rem;
   outline:none;direction:rtl;
@@ -313,7 +312,7 @@ tr:hover td{background:rgba(94,156,255,.06)}
 }
 .search-input:focus{
   border-color:var(--accent);
-  background:rgba(94,156,255,.08);
+  background-color:#0c0f18;
   box-shadow:0 0 0 4px var(--accent-glow);
 }
 select.search-input{cursor:pointer}
@@ -345,7 +344,8 @@ select.search-input{cursor:pointer}
 .form-row label{margin-bottom:.32rem}
 .form-row select,.form-row textarea{
   width:100%;padding:.65rem .9rem;
-  background:rgba(255,255,255,.07);
+  background:#0c0f18;
+  background-color: #0c0f18;
   border:1px solid rgba(255,255,255,.15);
   border-radius:var(--r);
   color:var(--text);font-family:var(--font);font-size:.88rem;
@@ -353,7 +353,7 @@ select.search-input{cursor:pointer}
 }
 .form-row select{cursor:pointer;direction:rtl}
 .form-row textarea{resize:vertical;min-height:75px;direction:rtl}
-.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);background:rgba(94,156,255,.07)}
+.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);background:rgba(94,156,255,.07);}
 .form-row input{margin-bottom:0}
 .modal-actions{display:flex;gap:.5rem;margin-top:1.5rem;justify-content:flex-end}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
@@ -571,7 +571,7 @@ select.search-input{cursor:pointer}
 <!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">مكتبة<span style="color:var(--gold)">ذكية</span></div>
+    <div class="login-logo">المكتبة<span style="color:var(--gold)"> الذكية</span></div>
     <div class="login-sub">منصة إدارة المكتبة الجامعية — v6.0</div>
     <label>اسم المستخدم</label>
     <input type="text" id="login-user" placeholder="admin"/>
@@ -583,7 +583,9 @@ select.search-input{cursor:pointer}
                     <a
                         href="signup.html"
                         class="link_signup"
-                        style=" font-weight: 700"
+                        style=" font-weight: 700 ; color: var(--accent); transition: color 0.2s"
+                        onmouseover="this.style.color='var(--accent2)'"
+                        onmouseout="this.style.color='var(--accent)'"
                         >انشاء حساب</a
                     >
                 </div>
@@ -994,7 +996,7 @@ select.search-input{cursor:pointer}
     <div class="form-row"><label>الاسم الكامل</label><input type="text" id="u-fullname" dir="rtl"/></div>
     <div class="form-row"><label>كلمة المرور *</label><input type="password" id="u-password"/></div>
     <div class="form-row"><label>الدور</label>
-      <select id="u-role">
+      <select id="u-role" style="background-color: #0c0f18;">
         <option value="student">student — طالب</option>
         <option value="teacher">teacher — أستاذ</option>
         <option value="librarian">librarian — أمين مكتبة</option>
@@ -1053,7 +1055,7 @@ select.search-input{cursor:pointer}
     </div>
     <div class="form-row">
       <label>الدور</label>
-      <select id="eu-role" class="form-row select" style="width:100%;padding:.65rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
+      <select id="eu-role" class="form-row select" style="width:100%;padding:.65rem .9rem;background:rgba(255,255,255,.07);background-color: #1F252F;border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
         <option value="student">student — طالب</option>
         <option value="teacher">teacher — أستاذ</option>
         <option value="librarian">librarian — أمين مكتبة</option>
@@ -2210,7 +2212,7 @@ async function loadUsers() {
         <td class="td-actions">
           <button class="btn btn-ghost btn-xs" onclick="openEditUser('${escQ(u.username)}','${escQ(u.email)}','${escQ(u.full_name||'')}','${u.role}',${u.is_active})">تعديل</button>
           <select onchange="changeRole('${u.username}',this.value)"
-            style="padding:.22rem .4rem;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--font);font-size:.72rem">
+            style="padding:.22rem .4rem;background:#1F252F;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--font);font-size:.72rem">
             ${['student','teacher','librarian','admin'].map(r=>`<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
           </select>
           ${u.is_active&&u.username!==CURRENT_USER?.username
